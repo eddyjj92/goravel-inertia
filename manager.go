@@ -1,6 +1,7 @@
 package goravelinertia
 
 import (
+	"maps"
 	"sync"
 
 	contractshttp "github.com/goravel/framework/contracts/http"
@@ -23,23 +24,23 @@ func NewInertiaManager(adapter *Adapter, url string, version string) *InertiaMan
 	}
 }
 
-func (m *InertiaManager) Render(ctx contractshttp.Context, component string, props map[string]any) error {
-	m.mu.RLock()
-	defer m.mu.RUnlock()
+func (m *InertiaManager) Render(ctx contractshttp.Context, component string, props map[string]any) contractshttp.Response {
+	return newResponse(func() error {
+		m.mu.RLock()
+		defer m.mu.RUnlock()
 
-	evaluated := make(map[string]any, len(m.sharedFuncs))
-	for key, fn := range m.sharedFuncs {
-		evaluated[key] = fn(ctx)
-	}
+		evaluated := make(map[string]any, len(m.sharedFuncs))
+		for key, fn := range m.sharedFuncs {
+			evaluated[key] = fn(ctx)
+		}
 
-	for k, v := range props {
-		evaluated[k] = v
-	}
+		maps.Copy(evaluated, props)
 
-	w := m.adapter.Writer(ctx)
-	r := m.adapter.Request(ctx)
+		w := m.adapter.Writer(ctx)
+		r := m.adapter.Request(ctx)
 
-	return m.adapter.Inertia().Render(w, r, component, evaluated)
+		return m.adapter.Inertia().Render(w, r, component, evaluated)
+	})
 }
 
 func (m *InertiaManager) Share(key string, value any) {
