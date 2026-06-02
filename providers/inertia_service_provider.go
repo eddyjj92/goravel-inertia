@@ -1,6 +1,9 @@
 package providers
 
 import (
+	"time"
+
+	contractshttp "github.com/goravel/framework/contracts/http"
 	"github.com/goravel/framework/contracts/foundation"
 
 	goravelinertia "github.com/eddyjj92/goravel-inertia"
@@ -49,5 +52,16 @@ func (p *InertiaServiceProvider) Boot(app foundation.Application) {
 		panic("Failed to resolve goravel.inertia: " + err.Error())
 	}
 
-	facades.RegisterInertia(instance.(contracts.Inertia))
+	inertia := instance.(contracts.Inertia)
+
+	config := app.MakeConfig()
+	if config != nil {
+		inertia.Share("appName", config.GetString("app.name"))
+	}
+
+	inertia.ShareFunc("timestamp", func(ctx contractshttp.Context) any {
+		return time.Now().Format("2006-01-02 15:04:05")
+	})
+
+	facades.RegisterInertia(inertia)
 }
