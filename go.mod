@@ -2,7 +2,10 @@ module github.com/eddyjj92/goravel-inertia
 
 go 1.26.1
 
-require github.com/goravel/framework v1.17.2
+require (
+	github.com/goravel/framework v1.17.2
+	github.com/petaki/inertia-go v0.0.0-00010101000000-000000000000
+)
 
 require (
 	github.com/Masterminds/squirrel v1.5.4 // indirect
