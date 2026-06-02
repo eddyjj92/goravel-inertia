@@ -54,13 +54,15 @@ func (m *InertiaManager) ShareFunc(key string, fn func(contractshttp.Context) an
 	m.sharedFuncs[key] = fn
 }
 
-func (m *InertiaManager) Location(ctx contractshttp.Context, url string) error {
-	w := m.adapter.Writer(ctx)
-	r := m.adapter.Request(ctx)
+func (m *InertiaManager) Location(ctx contractshttp.Context, url string) contractshttp.Response {
+	return newResponse(func() error {
+		w := m.adapter.Writer(ctx)
+		r := m.adapter.Request(ctx)
 
-	m.adapter.Inertia().Location(w, r, url)
+		m.adapter.Inertia().Location(w, r, url)
 
-	return nil
+		return nil
+	})
 }
 
 func (m *InertiaManager) Version() string {

@@ -15,12 +15,9 @@ func Inertia() contractshttp.Middleware {
 			return
 		}
 
-		inertia := facades.Inertia()
-		version := inertia.Version()
-		if ctx.Request().Method() == "GET" && ctx.Request().Header("X-Inertia-Version") != version {
-			w := ctx.Response().Writer()
-			w.Header().Set("X-Inertia-Location", ctx.Request().FullUrl())
-			w.WriteHeader(stdhttp.StatusConflict)
+		version := facades.Inertia().Version()
+		if ctx.Request().Method() == stdhttp.MethodGet && ctx.Request().Header("X-Inertia-Version") != version {
+			ctx.Response().Header("X-Inertia-Location", ctx.Request().FullUrl())
 			ctx.Request().Abort(stdhttp.StatusConflict)
 			return
 		}
