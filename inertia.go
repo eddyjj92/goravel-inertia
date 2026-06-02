@@ -14,6 +14,8 @@ type InertiaManager struct {
 	sharedFuncs  map[string]func(contractshttp.Context) any
 }
 
+var flashCtxKey = "goravel_inertia_flash"
+
 func NewInertiaManager(adapter *Adapter, url string, version string) *InertiaManager {
 	return &InertiaManager{
 		adapter:     adapter,
@@ -36,6 +38,10 @@ func (m *InertiaManager) Render(ctx contractshttp.Context, component string, pro
 		evaluated[k] = v
 	}
 
+	if flashData, ok := ctx.Value(flashCtxKey).(map[string]any); ok && len(flashData) > 0 {
+		evaluated["flash"] = flashData
+	}
+
 	w := m.adapter.Writer(ctx)
 	r := m.adapter.Request(ctx)
 
@@ -51,6 +57,15 @@ func (m *InertiaManager) ShareFunc(key string, fn func(contractshttp.Context) an
 	defer m.mu.Unlock()
 
 	m.sharedFuncs[key] = fn
+}
+
+func (m *InertiaManager) Flash(ctx contractshttp.Context, key string, value any) {
+	existing, ok := ctx.Value(flashCtxKey).(map[string]any)
+	if !ok || existing == nil {
+		existing = make(map[string]any)
+	}
+	existing[key] = value
+	ctx.WithValue(flashCtxKey, existing)
 }
 
 func (m *InertiaManager) Location(ctx contractshttp.Context, url string) error {
