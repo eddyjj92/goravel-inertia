@@ -8,17 +8,18 @@ import (
 	"github.com/eddyjj92/goravel-inertia/facades"
 )
 
-func Inertia(url string) contractshttp.Middleware {
+func Inertia() contractshttp.Middleware {
 	return func(ctx contractshttp.Context) {
 		if ctx.Request().Header("X-Inertia") == "" {
 			ctx.Request().Next()
 			return
 		}
 
-		version := facades.Inertia().Version()
+		inertia := facades.Inertia()
+		version := inertia.Version()
 		if ctx.Request().Method() == "GET" && ctx.Request().Header("X-Inertia-Version") != version {
 			w := ctx.Response().Writer()
-			w.Header().Set("X-Inertia-Location", url+ctx.Request().FullUrl())
+			w.Header().Set("X-Inertia-Location", inertia.URL()+ctx.Request().FullUrl())
 			w.WriteHeader(stdhttp.StatusConflict)
 			ctx.Request().Abort(stdhttp.StatusConflict)
 			return

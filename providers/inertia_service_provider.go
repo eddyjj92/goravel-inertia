@@ -37,7 +37,7 @@ func (p *InertiaServiceProvider) Register(app foundation.Application) {
 		}
 
 		adapter := goravelinertia.NewAdapter(inertia)
-		manager := goravelinertia.NewInertiaManager(adapter, version)
+		manager := goravelinertia.NewInertiaManager(adapter, url, version)
 
 		return manager, nil
 	})

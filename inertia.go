@@ -9,13 +9,15 @@ import (
 type InertiaManager struct {
 	mu           sync.RWMutex
 	adapter      *Adapter
+	url          string
 	version      string
 	sharedFuncs  map[string]func(contractshttp.Context) any
 }
 
-func NewInertiaManager(adapter *Adapter, version string) *InertiaManager {
+func NewInertiaManager(adapter *Adapter, url string, version string) *InertiaManager {
 	return &InertiaManager{
 		adapter:     adapter,
+		url:         url,
 		version:     version,
 		sharedFuncs: make(map[string]func(contractshttp.Context) any),
 	}
@@ -65,6 +67,13 @@ func (m *InertiaManager) Version() string {
 	defer m.mu.RUnlock()
 
 	return m.version
+}
+
+func (m *InertiaManager) URL() string {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+
+	return m.url
 }
 
 func (m *InertiaManager) GetAdapter() *Adapter {

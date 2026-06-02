@@ -8,4 +8,5 @@ type Inertia interface {
 	ShareFunc(key string, fn func(ctx http.Context) any)
 	Location(ctx http.Context, url string) error
 	Version() string
+	URL() string
 }
