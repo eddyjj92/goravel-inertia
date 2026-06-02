@@ -19,7 +19,7 @@ func Inertia() contractshttp.Middleware {
 		version := inertia.Version()
 		if ctx.Request().Method() == "GET" && ctx.Request().Header("X-Inertia-Version") != version {
 			w := ctx.Response().Writer()
-			w.Header().Set("X-Inertia-Location", inertia.URL()+ctx.Request().FullUrl())
+			w.Header().Set("X-Inertia-Location", ctx.Request().FullUrl())
 			w.WriteHeader(stdhttp.StatusConflict)
 			ctx.Request().Abort(stdhttp.StatusConflict)
 			return
