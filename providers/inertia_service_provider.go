@@ -49,6 +49,11 @@ func (p *InertiaServiceProvider) Register(app foundation.Application) {
 		url := ""
 		var flashKeys []string
 
+		vitePublic := "public"
+		viteBuild := "build"
+		viteHot := ""
+		viteDevURL := ""
+
 		if config != nil {
 			rootView = config.GetString("inertia.root_view", "app")
 			version = config.GetString("inertia.version", "")
@@ -56,6 +61,11 @@ func (p *InertiaServiceProvider) Register(app foundation.Application) {
 			ssrURL = config.GetString("inertia.ssr_url", "http://127.0.0.1:13714/render")
 			url = config.GetString("app.url", "")
 			flashKeys = toStringSlice(config.Get("inertia.flash_keys"))
+
+			vitePublic = config.GetString("inertia.vite.public_path", vitePublic)
+			viteBuild = config.GetString("inertia.vite.build_dir", viteBuild)
+			viteHot = config.GetString("inertia.vite.hot_file", viteHot)
+			viteDevURL = config.GetString("inertia.vite.dev_url", viteDevURL)
 		}
 
 		inertia := petaki.New(url, rootView, version)
@@ -63,6 +73,9 @@ func (p *InertiaServiceProvider) Register(app foundation.Application) {
 		if ssr {
 			inertia.EnableSsr(ssrURL)
 		}
+
+		vite := goravelinertia.NewVite(vitePublic, viteBuild, viteHot, viteDevURL)
+		inertia.ShareFunc("vite", vite.TemplateFunc())
 
 		adapter := goravelinertia.NewAdapter(inertia)
 		manager := goravelinertia.NewInertiaManager(adapter, url, version, flashKeys...)
