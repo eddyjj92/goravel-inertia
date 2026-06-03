@@ -5,12 +5,14 @@ import (
 	stdhttp "net/http"
 	"time"
 
+	"github.com/goravel/framework/contracts/console"
 	"github.com/goravel/framework/contracts/foundation"
 	contractshttp "github.com/goravel/framework/contracts/http"
 
 	petaki "github.com/petaki/inertia-go"
 
 	goravelinertia "github.com/eddyjj92/goravel-inertia"
+	inertiaconsole "github.com/eddyjj92/goravel-inertia/console"
 	"github.com/eddyjj92/goravel-inertia/contracts"
 	"github.com/eddyjj92/goravel-inertia/facades"
 )
@@ -120,4 +122,8 @@ func (p *InertiaServiceProvider) Boot(app foundation.Application) {
 	})
 
 	facades.RegisterInertia(inertia)
+
+	app.MakeArtisan().Register([]console.Command{
+		inertiaconsole.NewInstallCommand(),
+	})
 }

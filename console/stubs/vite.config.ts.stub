@@ -1,0 +1,30 @@
+import { defineConfig } from 'vite'
+import vue from '@vitejs/plugin-vue'
+import { resolve } from 'path'
+
+export default defineConfig(({ command }) => ({
+  // Assets are served from /build in production (see routes static mapping) but
+  // from the dev server root in development.
+  base: command === 'build' ? '/build/' : '/',
+  plugins: [vue()],
+  root: '.',
+  // Goravel serves ./public itself; outDir lives inside it, so disable Vite's
+  // public dir copy to avoid the overlap warning and recursive copies.
+  publicDir: false,
+  build: {
+    outDir: 'public/build',
+    manifest: true,
+    rollupOptions: {
+      input: 'resources/js/app.ts',
+    },
+  },
+  server: {
+    port: 5173,
+    strictPort: true,
+  },
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, 'resources/js'),
+    },
+  },
+}))

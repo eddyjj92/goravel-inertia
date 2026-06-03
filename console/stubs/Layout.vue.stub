@@ -1,0 +1,104 @@
+<template>
+  <div class="layout">
+    <header>
+      <h1>{{ appName }}</h1>
+      <nav>
+        <Link href="/dashboard" :class="{ active: isActive('/dashboard') }">Dashboard</Link>
+        <Link href="/about" :class="{ active: isActive('/about') }">About</Link>
+      </nav>
+    </header>
+
+    <main>
+      <div v-if="flash.success" class="flash flash-success">{{ flash.success }}</div>
+      <div v-if="flash.error" class="flash flash-error">{{ flash.error }}</div>
+      <slot />
+    </main>
+
+    <footer>
+      <p>{{ timestamp }}</p>
+    </footer>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { Link, usePage } from '@inertiajs/vue3'
+import { computed } from 'vue'
+
+const page = usePage()
+
+const appName = computed(() => page.props.appName)
+const timestamp = computed(() => page.props.timestamp)
+const flash = computed(() => page.props.flash ?? {})
+
+const isActive = (href: string) => page.url.startsWith(href)
+</script>
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  background: #f5f5f5;
+  color: #333;
+}
+.layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+header {
+  background: #646cff;
+  color: #fff;
+  padding: 1rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+header h1 {
+  font-size: 1.25rem;
+}
+nav {
+  display: flex;
+  gap: 1rem;
+}
+nav a {
+  color: #fff;
+  text-decoration: none;
+  opacity: 0.85;
+}
+nav a:hover,
+nav a.active {
+  opacity: 1;
+  text-decoration: underline;
+}
+main {
+  flex: 1;
+  padding: 2rem;
+}
+footer {
+  background: #e0e0e0;
+  padding: 1rem 2rem;
+  text-align: center;
+  font-size: 0.85rem;
+  color: #666;
+}
+.flash {
+  max-width: 640px;
+  margin: 0 auto 1.5rem;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+}
+.flash-success {
+  background: #e7f6ec;
+  color: #1b7a3d;
+  border: 1px solid #b6e3c5;
+}
+.flash-error {
+  background: #fdeaea;
+  color: #b02a2a;
+  border: 1px solid #f3c2c2;
+}
+</style>
