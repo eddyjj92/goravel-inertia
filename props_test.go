@@ -23,6 +23,7 @@ type fakeContext struct {
 	req  *http.Request
 	w    http.ResponseWriter
 	sess *fakeSession
+	resp *fakeResponse
 }
 
 func newFakeContext(req *http.Request, w http.ResponseWriter) *fakeContext {
@@ -39,7 +40,12 @@ func (f *fakeContext) WithValue(k, v any)            { f.vals[k] = v }
 func (f *fakeContext) Request() contractshttp.ContextRequest {
 	return &fakeRequest{r: f.req, sess: f.sess}
 }
-func (f *fakeContext) Response() contractshttp.ContextResponse { return &fakeResponse{w: f.w} }
+func (f *fakeContext) Response() contractshttp.ContextResponse {
+	if f.resp == nil {
+		f.resp = &fakeResponse{w: f.w}
+	}
+	return f.resp
+}
 
 type fakeRequest struct {
 	contractshttp.ContextRequest
@@ -48,6 +54,7 @@ type fakeRequest struct {
 }
 
 func (f *fakeRequest) Origin() *http.Request { return f.r }
+func (f *fakeRequest) Method() string        { return f.r.Method }
 func (f *fakeRequest) HasSession() bool      { return f.sess != nil }
 func (f *fakeRequest) Session() session.Session {
 	return f.sess
@@ -55,10 +62,24 @@ func (f *fakeRequest) Session() session.Session {
 
 type fakeResponse struct {
 	contractshttp.ContextResponse
-	w http.ResponseWriter
+	w            http.ResponseWriter
+	redirectCode int
+	redirectURL  string
 }
 
 func (f *fakeResponse) Writer() http.ResponseWriter { return f.w }
+
+func (f *fakeResponse) Redirect(code int, url string) contractshttp.AbortableResponse {
+	f.redirectCode = code
+	f.redirectURL = url
+	return &fakeAbortable{}
+}
+
+// fakeAbortable is a no-op AbortableResponse returned by fakeResponse.Redirect.
+type fakeAbortable struct{}
+
+func (f *fakeAbortable) Render() error { return nil }
+func (f *fakeAbortable) Abort() error  { return nil }
 
 func inertiaJSON(t *testing.T, m *InertiaManager, ctx contractshttp.Context, component string, props map[string]any) map[string]any {
 	t.Helper()
