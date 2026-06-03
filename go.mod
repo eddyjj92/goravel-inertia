@@ -4,7 +4,7 @@ go 1.26.1
 
 require (
 	github.com/goravel/framework v1.17.2
-	github.com/petaki/inertia-go v0.0.0-00010101000000-000000000000
+	github.com/petaki/inertia-go v1.15.0
 )
 
 require (
@@ -24,5 +24,3 @@ require (
 	google.golang.org/protobuf v1.36.11 // indirect
 	gorm.io/gorm v1.31.1 // indirect
 )
-
-replace github.com/petaki/inertia-go => ../inertia-go
