@@ -9,6 +9,8 @@ import (
 	"time"
 
 	contractshttp "github.com/goravel/framework/contracts/http"
+
+	"github.com/eddyjj92/goravel-inertia/contracts"
 )
 
 // fakeContext implements just enough of contractshttp.Context for the manager.
@@ -98,6 +100,107 @@ func TestDeferThreadsIntoRenderedJSON(t *testing.T) {
 	props, _ := page["props"].(map[string]any)
 	if _, present := props["stats"]; present {
 		t.Errorf("deferred prop 'stats' should be absent from initial props, got %#v", props)
+	}
+}
+
+func TestOptionalAbsentOnFullLoad(t *testing.T) {
+	m := newTestManager("", "")
+	ctx := newInertiaCtx()
+
+	m.Optional(ctx, "expensive", func() any { return 42 })
+
+	page := inertiaJSON(t, m, ctx, "Dashboard", nil)
+	props, _ := page["props"].(map[string]any)
+	if _, present := props["expensive"]; present {
+		t.Errorf("optional prop should be absent on full load, got %#v", props["expensive"])
+	}
+}
+
+func TestAlwaysPresentInProps(t *testing.T) {
+	m := newTestManager("", "")
+	ctx := newInertiaCtx()
+
+	m.Always(ctx, "now", func() any { return "tick" })
+
+	page := inertiaJSON(t, m, ctx, "Dashboard", nil)
+	props, _ := page["props"].(map[string]any)
+	if props["now"] != "tick" {
+		t.Errorf("always prop = %#v, want tick", props["now"])
+	}
+}
+
+func TestMergePropListedAndValued(t *testing.T) {
+	m := newTestManager("", "")
+	ctx := newInertiaCtx()
+
+	m.Merge(ctx, "items", func() any { return []any{"a"} }, "id")
+
+	page := inertiaJSON(t, m, ctx, "Dashboard", nil)
+
+	mergeProps, _ := page["mergeProps"].([]any)
+	if len(mergeProps) != 1 || mergeProps[0] != "items" {
+		t.Fatalf("mergeProps = %#v, want [items]", page["mergeProps"])
+	}
+	props, _ := page["props"].(map[string]any)
+	if _, present := props["items"]; !present {
+		t.Errorf("merge prop value missing from props: %#v", props)
+	}
+	matchOn, _ := page["matchPropsOn"].([]any)
+	if len(matchOn) != 1 || matchOn[0] != "items.id" {
+		t.Errorf("matchPropsOn = %#v, want [items.id]", page["matchPropsOn"])
+	}
+}
+
+func TestErrorIntoProps(t *testing.T) {
+	m := newTestManager("", "")
+	ctx := newInertiaCtx()
+
+	m.Error(ctx, "email", "is required")
+
+	page := inertiaJSON(t, m, ctx, "Dashboard", nil)
+	props, _ := page["props"].(map[string]any)
+	errs, _ := props["errors"].(map[string]any)
+	if errs["email"] != "is required" {
+		t.Errorf("errors[email] = %#v, want 'is required'", errs["email"])
+	}
+}
+
+func TestFlashIntoPage(t *testing.T) {
+	m := newTestManager("", "")
+	ctx := newInertiaCtx()
+
+	m.Flash(ctx, map[string]any{"success": "saved"})
+
+	page := inertiaJSON(t, m, ctx, "Dashboard", nil)
+	flash, _ := page["flash"].(map[string]any)
+	if flash["success"] != "saved" {
+		t.Errorf("flash[success] = %#v, want saved", flash["success"])
+	}
+}
+
+func TestClearHistoryFlag(t *testing.T) {
+	m := newTestManager("", "")
+	ctx := newInertiaCtx()
+
+	m.ClearHistory(ctx)
+
+	page := inertiaJSON(t, m, ctx, "Dashboard", nil)
+	if page["clearHistory"] != true {
+		t.Errorf("clearHistory = %#v, want true", page["clearHistory"])
+	}
+}
+
+func TestScrollProp(t *testing.T) {
+	m := newTestManager("", "")
+	ctx := newInertiaCtx()
+
+	m.Scroll(ctx, "feed", contracts.ScrollProp{PageName: "page", CurrentPage: 2})
+
+	page := inertiaJSON(t, m, ctx, "Dashboard", nil)
+	scroll, _ := page["scrollProps"].(map[string]any)
+	feed, ok := scroll["feed"].(map[string]any)
+	if !ok || feed["pageName"] != "page" {
+		t.Errorf("scrollProps[feed] = %#v, want pageName=page", scroll["feed"])
 	}
 }
 
