@@ -35,6 +35,7 @@ var fileMap = map[string]string{
 	"stubs/Layout.vue.stub":        "resources/js/Layout.vue",
 	"stubs/Logo.vue.stub":          "resources/js/components/Logo.vue",
 	"stubs/goravel-inertia.png":    "resources/js/assets/goravel-inertia.png",
+	"stubs/favicon.png":            "public/favicon.png",
 	"stubs/Home.vue.stub":          "resources/js/Pages/Home.vue",
 	"stubs/Feed.vue.stub":          "resources/js/Pages/Feed.vue",
 	"stubs/Contact.vue.stub":       "resources/js/Pages/Contact.vue",
