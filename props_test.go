@@ -9,6 +9,7 @@ import (
 	"time"
 
 	contractshttp "github.com/goravel/framework/contracts/http"
+	"github.com/goravel/framework/contracts/session"
 
 	"github.com/eddyjj92/goravel-inertia/contracts"
 )
@@ -21,6 +22,7 @@ type fakeContext struct {
 	vals map[any]any
 	req  *http.Request
 	w    http.ResponseWriter
+	sess *fakeSession
 }
 
 func newFakeContext(req *http.Request, w http.ResponseWriter) *fakeContext {
@@ -34,15 +36,22 @@ func (f *fakeContext) Value(key any) any           { return f.vals[key] }
 func (f *fakeContext) Context() context.Context    { return f.base }
 func (f *fakeContext) WithContext(c context.Context) { f.base = c }
 func (f *fakeContext) WithValue(k, v any)             { f.vals[k] = v }
-func (f *fakeContext) Request() contractshttp.ContextRequest   { return &fakeRequest{r: f.req} }
+func (f *fakeContext) Request() contractshttp.ContextRequest {
+	return &fakeRequest{r: f.req, sess: f.sess}
+}
 func (f *fakeContext) Response() contractshttp.ContextResponse { return &fakeResponse{w: f.w} }
 
 type fakeRequest struct {
 	contractshttp.ContextRequest
-	r *http.Request
+	r    *http.Request
+	sess *fakeSession
 }
 
 func (f *fakeRequest) Origin() *http.Request { return f.r }
+func (f *fakeRequest) HasSession() bool      { return f.sess != nil }
+func (f *fakeRequest) Session() session.Session {
+	return f.sess
+}
 
 type fakeResponse struct {
 	contractshttp.ContextResponse

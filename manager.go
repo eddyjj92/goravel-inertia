@@ -8,19 +8,29 @@ import (
 	contractshttp "github.com/goravel/framework/contracts/http"
 )
 
+// defaultFlashKeys are the session keys mirrored into props.flash when no
+// flash_keys are configured.
+var defaultFlashKeys = []string{"success", "error", "warning", "info", "message"}
+
 type InertiaManager struct {
-	mu           sync.RWMutex
-	adapter      *Adapter
-	url          string
-	version      string
-	sharedFuncs  map[string]func(contractshttp.Context) any
+	mu          sync.RWMutex
+	adapter     *Adapter
+	url         string
+	version     string
+	flashKeys   []string
+	sharedFuncs map[string]func(contractshttp.Context) any
 }
 
-func NewInertiaManager(adapter *Adapter, url string, version string) *InertiaManager {
+func NewInertiaManager(adapter *Adapter, url string, version string, flashKeys ...string) *InertiaManager {
+	if len(flashKeys) == 0 {
+		flashKeys = defaultFlashKeys
+	}
+
 	return &InertiaManager{
 		adapter:     adapter,
 		url:         url,
 		version:     version,
+		flashKeys:   flashKeys,
 		sharedFuncs: make(map[string]func(contractshttp.Context) any),
 	}
 }

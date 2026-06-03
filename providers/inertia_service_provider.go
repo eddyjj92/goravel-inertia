@@ -15,6 +15,25 @@ import (
 type InertiaServiceProvider struct {
 }
 
+// toStringSlice converts a config value (which may be []string or []any) into a
+// []string, returning nil so the manager falls back to its default flash keys.
+func toStringSlice(v any) []string {
+	switch s := v.(type) {
+	case []string:
+		return s
+	case []any:
+		out := make([]string, 0, len(s))
+		for _, item := range s {
+			if str, ok := item.(string); ok {
+				out = append(out, str)
+			}
+		}
+		return out
+	default:
+		return nil
+	}
+}
+
 func (p *InertiaServiceProvider) Register(app foundation.Application) {
 	app.Singleton("goravel.inertia", func(app foundation.Application) (any, error) {
 		config := app.MakeConfig()
@@ -24,6 +43,7 @@ func (p *InertiaServiceProvider) Register(app foundation.Application) {
 		ssr := false
 		ssrURL := "http://127.0.0.1:13714/render"
 		url := ""
+		var flashKeys []string
 
 		if config != nil {
 			rootView = config.GetString("inertia.root_view", "app")
@@ -31,6 +51,7 @@ func (p *InertiaServiceProvider) Register(app foundation.Application) {
 			ssr = config.GetBool("inertia.ssr", false)
 			ssrURL = config.GetString("inertia.ssr_url", "http://127.0.0.1:13714/render")
 			url = config.GetString("app.url", "")
+			flashKeys = toStringSlice(config.Get("inertia.flash_keys"))
 		}
 
 		inertia := petaki.New(url, rootView, version)
@@ -40,7 +61,7 @@ func (p *InertiaServiceProvider) Register(app foundation.Application) {
 		}
 
 		adapter := goravelinertia.NewAdapter(inertia)
-		manager := goravelinertia.NewInertiaManager(adapter, url, version)
+		manager := goravelinertia.NewInertiaManager(adapter, url, version, flashKeys...)
 
 		return manager, nil
 	})

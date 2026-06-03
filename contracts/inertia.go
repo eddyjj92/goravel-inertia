@@ -1,6 +1,9 @@
 package contracts
 
-import "github.com/goravel/framework/contracts/http"
+import (
+	"github.com/goravel/framework/contracts/http"
+	"github.com/goravel/framework/contracts/validation"
+)
 
 // ScrollProp describes an infinite-scroll/pagination prop. Mirrors the petaki
 // ScrollPageProp so consumers don't depend on the underlying library.
@@ -32,6 +35,8 @@ type Inertia interface {
 	Scroll(ctx http.Context, key string, prop ScrollProp)
 	Error(ctx http.Context, key string, value any)
 	Flash(ctx http.Context, data map[string]any)
+	FlashErrors(ctx http.Context, errors validation.Errors)
+	ShareSession(ctx http.Context)
 	ClearHistory(ctx http.Context)
 	EncryptHistory(ctx http.Context)
 	PreserveFragment(ctx http.Context)

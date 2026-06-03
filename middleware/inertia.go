@@ -19,17 +19,19 @@ import (
 // they lazily initialise from the request context the first time one is set.
 func Inertia() contractshttp.Middleware {
 	return func(ctx contractshttp.Context) {
-		if ctx.Request().Header("X-Inertia") == "" {
-			ctx.Request().Next()
-			return
-		}
+		inertia := facades.Inertia()
 
-		version := facades.Inertia().Version()
-		if ctx.Request().Method() == stdhttp.MethodGet && ctx.Request().Header("X-Inertia-Version") != version {
+		if ctx.Request().Header("X-Inertia") != "" &&
+			ctx.Request().Method() == stdhttp.MethodGet &&
+			ctx.Request().Header("X-Inertia-Version") != inertia.Version() {
 			ctx.Response().Header("X-Inertia-Location", ctx.Request().FullUrl())
 			ctx.Request().Abort(stdhttp.StatusConflict)
 			return
 		}
+
+		// Mirror session flash + validation errors into props for both the initial
+		// HTML load and X-Inertia visits.
+		inertia.ShareSession(ctx)
 
 		ctx.Request().Next()
 	}
