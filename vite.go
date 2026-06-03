@@ -1,6 +1,8 @@
 package goravelinertia
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"html/template"
@@ -138,12 +140,7 @@ func (v *Vite) loadManifest() (map[string]viteChunk, error) {
 	}
 	v.loaded = true
 
-	candidates := []string{
-		filepath.Join(v.publicPath, v.buildDir, ".vite", "manifest.json"),
-		filepath.Join(v.publicPath, v.buildDir, "manifest.json"),
-	}
-
-	for _, candidate := range candidates {
+	for _, candidate := range v.manifestCandidates() {
 		data, err := os.ReadFile(candidate)
 		if err != nil {
 			continue
@@ -159,6 +156,31 @@ func (v *Vite) loadManifest() (map[string]viteChunk, error) {
 	}
 
 	return nil, fmt.Errorf("manifest not found under %s", filepath.Join(v.publicPath, v.buildDir))
+}
+
+// manifestCandidates lists the manifest locations to try, newest Vite layout first.
+func (v *Vite) manifestCandidates() []string {
+	return []string{
+		filepath.Join(v.publicPath, v.buildDir, ".vite", "manifest.json"),
+		filepath.Join(v.publicPath, v.buildDir, "manifest.json"),
+	}
+}
+
+// Version returns an asset version derived from the build manifest (its md5 hash),
+// or "" when no manifest exists (e.g. during development). The hash changes
+// whenever the built assets change, so it works as a cache-busting version.
+func (v *Vite) Version() string {
+	for _, candidate := range v.manifestCandidates() {
+		data, err := os.ReadFile(candidate)
+		if err != nil {
+			continue
+		}
+
+		sum := md5.Sum(data)
+		return hex.EncodeToString(sum[:])
+	}
+
+	return ""
 }
 
 func moduleScript(src string) string {

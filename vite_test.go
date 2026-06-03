@@ -67,6 +67,47 @@ func TestViteProdTagsFromManifest(t *testing.T) {
 	}
 }
 
+func writeManifest(t *testing.T, public, body string) {
+	t.Helper()
+	dir := filepath.Join(public, "build", ".vite")
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "manifest.json"), []byte(body), 0o600); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestViteVersionFromManifestHash(t *testing.T) {
+	public := t.TempDir()
+	writeManifest(t, public, `{"resources/js/app.ts":{"file":"assets/app-aaa.js"}}`)
+
+	v := NewVite(public, "build", filepath.Join(public, "hot"), "")
+	version := v.Version()
+	if version == "" {
+		t.Fatal("expected non-empty version from manifest")
+	}
+
+	// Same content -> same version (stable).
+	if v2 := NewVite(public, "build", filepath.Join(public, "hot"), "").Version(); v2 != version {
+		t.Errorf("version not stable: %q vs %q", version, v2)
+	}
+
+	// Changed content -> different version (cache bust).
+	writeManifest(t, public, `{"resources/js/app.ts":{"file":"assets/app-bbb.js"}}`)
+	if changed := NewVite(public, "build", filepath.Join(public, "hot"), "").Version(); changed == version {
+		t.Errorf("version should change when manifest changes, still %q", version)
+	}
+}
+
+func TestViteVersionEmptyWithoutManifest(t *testing.T) {
+	public := t.TempDir()
+	v := NewVite(public, "build", filepath.Join(public, "hot"), "")
+	if got := v.Version(); got != "" {
+		t.Errorf("Version() = %q, want empty without manifest", got)
+	}
+}
+
 func TestViteProdMissingManifestRendersComment(t *testing.T) {
 	public := t.TempDir()
 	v := NewVite(public, "build", filepath.Join(public, "hot"), "")

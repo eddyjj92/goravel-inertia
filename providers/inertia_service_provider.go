@@ -68,13 +68,20 @@ func (p *InertiaServiceProvider) Register(app foundation.Application) {
 			viteDevURL = config.GetString("inertia.vite.dev_url", viteDevURL)
 		}
 
+		vite := goravelinertia.NewVite(vitePublic, viteBuild, viteHot, viteDevURL)
+
+		// Auto-derive the asset version from the build manifest when not pinned in
+		// config, so a new build invalidates the client cache automatically.
+		if version == "" {
+			version = vite.Version()
+		}
+
 		inertia := petaki.New(url, rootView, version)
 
 		if ssr {
 			inertia.EnableSsr(ssrURL)
 		}
 
-		vite := goravelinertia.NewVite(vitePublic, viteBuild, viteHot, viteDevURL)
 		inertia.ShareFunc("vite", vite.TemplateFunc())
 
 		adapter := goravelinertia.NewAdapter(inertia)
