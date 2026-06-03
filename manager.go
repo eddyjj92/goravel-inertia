@@ -37,7 +37,7 @@ func (m *InertiaManager) Render(ctx contractshttp.Context, component string, pro
 		maps.Copy(evaluated, props)
 
 		w := m.adapter.Writer(ctx)
-		r := m.adapter.Request(ctx)
+		r := m.adapter.Request(ctx).WithContext(m.propsContext(ctx))
 
 		return m.adapter.Inertia().Render(w, r, component, evaluated)
 	})
