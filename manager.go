@@ -2,6 +2,7 @@ package goravelinertia
 
 import (
 	"maps"
+	stdhttp "net/http"
 	"sync"
 
 	contractshttp "github.com/goravel/framework/contracts/http"
@@ -52,6 +53,25 @@ func (m *InertiaManager) ShareFunc(key string, fn func(contractshttp.Context) an
 	defer m.mu.Unlock()
 
 	m.sharedFuncs[key] = fn
+}
+
+// redirectStatus returns the HTTP status an Inertia redirect must use. Mutating
+// methods (PUT/PATCH/DELETE) require 303 See Other so the browser follows the
+// redirect with a GET instead of replaying the original method; everything else
+// uses 302 Found. Mirrors the behaviour of inertiajs/inertia-laravel.
+func redirectStatus(method string) int {
+	switch method {
+	case stdhttp.MethodPut, stdhttp.MethodPatch, stdhttp.MethodDelete:
+		return stdhttp.StatusSeeOther
+	default:
+		return stdhttp.StatusFound
+	}
+}
+
+// Redirect issues an Inertia-aware internal redirect, picking 303 for mutating
+// requests so the client re-fetches the target with a GET.
+func (m *InertiaManager) Redirect(ctx contractshttp.Context, url string) contractshttp.Response {
+	return ctx.Response().Redirect(redirectStatus(ctx.Request().Method()), url)
 }
 
 func (m *InertiaManager) Location(ctx contractshttp.Context, url string) contractshttp.Response {

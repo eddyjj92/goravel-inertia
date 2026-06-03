@@ -1,6 +1,7 @@
 package goravelinertia
 
 import (
+	"net/http"
 	"testing"
 
 	petaki "github.com/petaki/inertia-go"
@@ -30,5 +31,21 @@ func TestManagerAdapterWired(t *testing.T) {
 	}
 	if m.GetAdapter().Inertia() == nil {
 		t.Fatal("adapter.Inertia() = nil, want petaki instance")
+	}
+}
+
+func TestRedirectStatus(t *testing.T) {
+	cases := map[string]int{
+		http.MethodGet:    http.StatusFound,
+		http.MethodPost:   http.StatusFound,
+		http.MethodPut:    http.StatusSeeOther,
+		http.MethodPatch:  http.StatusSeeOther,
+		http.MethodDelete: http.StatusSeeOther,
+	}
+
+	for method, want := range cases {
+		if got := redirectStatus(method); got != want {
+			t.Errorf("redirectStatus(%s) = %d, want %d", method, got, want)
+		}
 	}
 }

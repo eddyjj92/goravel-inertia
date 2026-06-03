@@ -14,6 +14,7 @@ type ScrollProp struct {
 
 type Inertia interface {
 	Render(ctx http.Context, component string, props map[string]any) http.Response
+	Redirect(ctx http.Context, url string) http.Response
 	Location(ctx http.Context, url string) http.Response
 
 	Share(key string, value any)
