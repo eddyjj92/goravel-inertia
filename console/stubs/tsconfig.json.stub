@@ -9,12 +9,13 @@
     "isolatedModules": true,
     "esModuleInterop": true,
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "types": ["node"],
     "skipLibCheck": true,
     "noEmit": true,
     "paths": {
       "@/*": ["./resources/js/*"]
     }
   },
-  "include": ["resources/js/**/*.ts", "resources/js/**/*.vue"],
+  "include": ["resources/js/**/*.ts", "resources/js/**/*.vue", "vite.config.ts"],
   "exclude": ["node_modules"]
 }
