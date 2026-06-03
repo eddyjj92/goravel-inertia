@@ -1,12 +1,52 @@
-import { defineConfig } from 'vite'
+import { defineConfig, type PluginOption, type ViteDevServer } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
+import { writeFileSync, rmSync } from 'fs'
+
+// goravelHot writes public/hot with the dev-server URL while `vite` runs (and
+// removes it on exit), Laravel-style. The Go backend reads that file and loads
+// assets from the dev server (HMR) instead of the production manifest — so
+// `go run .` needs no VITE_DEV_URL env var during development.
+function goravelHot(): PluginOption {
+  const hotFile = resolve(__dirname, 'public/hot')
+  const clean = () => {
+    try {
+      rmSync(hotFile)
+    } catch {
+      // hot file already gone
+    }
+  }
+
+  return {
+    name: 'goravel-hot',
+    apply: 'serve',
+    configureServer(server: ViteDevServer) {
+      const write = () => {
+        const { https, host, port } = server.config.server
+        const proto = https ? 'https' : 'http'
+        const hostname = typeof host === 'string' ? host : 'localhost'
+        writeFileSync(hotFile, `${proto}://${hostname}:${port ?? 5173}`)
+      }
+
+      server.httpServer?.once('listening', write)
+      process.on('SIGINT', () => {
+        clean()
+        process.exit()
+      })
+      process.on('SIGTERM', () => {
+        clean()
+        process.exit()
+      })
+      process.on('exit', clean)
+    },
+  }
+}
 
 export default defineConfig(({ command }) => ({
   // Assets are served from /build in production (see routes static mapping) but
   // from the dev server root in development.
   base: command === 'build' ? '/build/' : '/',
-  plugins: [vue()],
+  plugins: [vue(), goravelHot()],
   root: '.',
   // Goravel serves ./public itself; outDir lives inside it, so disable Vite's
   // public dir copy to avoid the overlap warning and recursive copies.
