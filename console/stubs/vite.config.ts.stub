@@ -61,6 +61,12 @@ export default defineConfig(({ command }) => ({
   server: {
     port: 5173,
     strictPort: true,
+    // The page is served by Goravel (:3000) while assets come from the Vite dev
+    // server (:5173). Without an explicit origin, imported assets (e.g. the logo)
+    // get root-relative URLs that the browser resolves against :3000 → 404. Set
+    // origin so Vite emits absolute dev-server URLs in development.
+    origin: 'http://localhost:5173',
+    cors: true,
   },
   resolve: {
     alias: {

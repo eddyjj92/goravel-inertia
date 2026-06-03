@@ -1,0 +1,101 @@
+<template>
+  <div class="feed-page">
+    <header class="head">
+      <h1 class="page-title">Feed</h1>
+      <p class="lead">
+        <strong>Merge prop</strong> demo — “Load more” does a partial reload and the
+        client <em>appends</em> the new items instead of replacing the list.
+      </p>
+    </header>
+
+    <ul class="feed">
+      <li v-for="item in items" :key="item.id" class="feed-item card">
+        <span class="dot">{{ item.id }}</span>
+        <div>
+          <strong>{{ item.title }}</strong>
+          <span class="body">{{ item.body }}</span>
+        </div>
+      </li>
+    </ul>
+
+    <div class="actions">
+      <button v-if="hasMore" class="btn" :disabled="loading" @click="loadMore">
+        {{ loading ? 'Loading…' : 'Load more' }}
+      </button>
+      <p v-else class="lead">That's everything.</p>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { router } from '@inertiajs/vue3'
+import { ref } from 'vue'
+
+interface FeedItem {
+  id: number
+  title: string
+  body: string
+}
+
+const props = defineProps<{
+  items: FeedItem[]
+  page: number
+  hasMore: boolean
+}>()
+
+const loading = ref(false)
+
+const loadMore = () => {
+  loading.value = true
+  router.reload({
+    only: ['items', 'page', 'hasMore'],
+    data: { page: props.page + 1 },
+    onFinish: () => {
+      loading.value = false
+    },
+  })
+}
+</script>
+
+<style scoped>
+.head {
+  margin-bottom: 1.5rem;
+}
+.feed {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.feed-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.2rem;
+}
+.feed-item > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.dot {
+  flex: none;
+  width: 2.2rem;
+  height: 2.2rem;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, var(--go), var(--inertia));
+}
+.body {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.actions {
+  margin-top: 1.5rem;
+  text-align: center;
+}
+</style>

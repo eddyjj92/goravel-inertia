@@ -1,0 +1,45 @@
+package controllers
+
+import (
+	"fmt"
+
+	"github.com/goravel/framework/contracts/http"
+
+	inertiafacades "github.com/eddyjj92/goravel-inertia/facades"
+)
+
+type FeedController struct{}
+
+func NewFeedController() *FeedController {
+	return &FeedController{}
+}
+
+const (
+	feedPageSize = 5
+	feedMaxPage  = 6
+)
+
+// Index demonstrates a Merge prop (Inertia v3). On a partial reload the client
+// appends each new page of "items" to the existing list instead of replacing it.
+func (r *FeedController) Index(ctx http.Context) http.Response {
+	page := max(ctx.Request().InputInt("page", 1), 1)
+
+	inertiafacades.Inertia().Merge(ctx, "items", func() any {
+		items := make([]map[string]any, 0, feedPageSize)
+		start := (page - 1) * feedPageSize
+		for i := range feedPageSize {
+			n := start + i + 1
+			items = append(items, map[string]any{
+				"id":    n,
+				"title": fmt.Sprintf("Item #%d", n),
+				"body":  fmt.Sprintf("Generated content for item %d.", n),
+			})
+		}
+		return items
+	})
+
+	return inertiafacades.Inertia().Render(ctx, "Feed", map[string]any{
+		"page":    page,
+		"hasMore": page < feedMaxPage,
+	})
+}

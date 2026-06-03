@@ -1,0 +1,100 @@
+<template>
+  <div class="contact-page">
+    <header class="head">
+      <h1 class="page-title">Contact</h1>
+      <p class="lead">
+        <strong>Flash + Validation</strong> demo — POST → validate → redirect back.
+        Errors arrive in <code>props.errors</code>, success in
+        <code>props.flash.success</code>.
+      </p>
+    </header>
+
+    <form class="form card" @submit.prevent="submit">
+      <label :class="{ invalid: form.errors.name }">
+        <span class="label">Name</span>
+        <input v-model="form.name" type="text" name="name" placeholder="Ada Lovelace" />
+        <span v-if="form.errors.name" class="error">{{ form.errors.name }}</span>
+      </label>
+
+      <label :class="{ invalid: form.errors.email }">
+        <span class="label">Email</span>
+        <input v-model="form.email" type="text" name="email" placeholder="ada@example.com" />
+        <span v-if="form.errors.email" class="error">{{ form.errors.email }}</span>
+      </label>
+
+      <label :class="{ invalid: form.errors.message }">
+        <span class="label">Message</span>
+        <textarea v-model="form.message" name="message" rows="4" placeholder="Say hi…" />
+        <span v-if="form.errors.message" class="error">{{ form.errors.message }}</span>
+      </label>
+
+      <button type="submit" class="btn" :disabled="form.processing">
+        {{ form.processing ? 'Sending…' : 'Send message' }}
+      </button>
+    </form>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { useForm } from '@inertiajs/vue3'
+
+const form = useForm({
+  name: '',
+  email: '',
+  message: '',
+})
+
+const submit = () => {
+  form.post('/contact', {
+    preserveScroll: true,
+    onSuccess: () => form.reset(),
+  })
+}
+</script>
+
+<style scoped>
+.head {
+  margin-bottom: 1.5rem;
+}
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+input,
+textarea {
+  font: inherit;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fff;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+input:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--go);
+  box-shadow: 0 0 0 3px var(--ring);
+}
+label.invalid input,
+label.invalid textarea {
+  border-color: #e57373;
+}
+.error {
+  color: #b02a2a;
+  font-size: 0.8rem;
+}
+.btn {
+  align-self: flex-start;
+}
+</style>

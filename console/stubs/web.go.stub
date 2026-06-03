@@ -1,0 +1,44 @@
+package routes
+
+import (
+	"github.com/goravel/framework/contracts/http"
+	"github.com/goravel/framework/facades"
+	sessionmiddleware "github.com/goravel/framework/session/middleware"
+
+	inertiafacades "github.com/eddyjj92/goravel-inertia/facades"
+	inertiamiddleware "github.com/eddyjj92/goravel-inertia/middleware"
+
+	"__MODULE__/app/http/controllers"
+)
+
+func Web() {
+	facades.Route().GlobalMiddleware(
+		sessionmiddleware.StartSession(),
+		inertiamiddleware.Inertia(),
+	)
+
+	// Shared prop available on every page as usePage().props.auth.
+	inertiafacades.Inertia().ShareFunc("auth", func(ctx http.Context) any {
+		var user map[string]any
+		if err := facades.Auth(ctx).User(&user); err != nil {
+			return nil
+		}
+		return user
+	})
+
+	facades.Route().Static("public", "./public")
+	facades.Route().Static("build", "./public/build")
+
+	homeController := controllers.NewHomeController()
+	facades.Route().Get("/", homeController.Index)
+
+	feedController := controllers.NewFeedController()
+	facades.Route().Get("/feed", feedController.Index)
+
+	contactController := controllers.NewContactController()
+	facades.Route().Get("/contact", contactController.Index)
+	facades.Route().Post("/contact", contactController.Store)
+
+	aboutController := controllers.NewAboutController()
+	facades.Route().Get("/about", aboutController.Index)
+}

@@ -1,0 +1,40 @@
+package controllers
+
+import (
+	"github.com/goravel/framework/contracts/http"
+
+	inertiafacades "github.com/eddyjj92/goravel-inertia/facades"
+)
+
+type ContactController struct{}
+
+func NewContactController() *ContactController {
+	return &ContactController{}
+}
+
+// Index renders the contact form. Validation errors and flash messages from a
+// previous submit are mirrored from the session into props by the Inertia
+// middleware's ShareSession (props.errors / props.flash).
+func (r *ContactController) Index(ctx http.Context) http.Response {
+	return inertiafacades.Inertia().Render(ctx, "Contact", map[string]any{})
+}
+
+// Store validates the submission. On failure it flashes the errors and redirects
+// back (Inertia re-renders with props.errors). On success it flashes a message.
+func (r *ContactController) Store(ctx http.Context) http.Response {
+	validator, err := ctx.Request().Validate(map[string]string{
+		"name":    "required|min_len:2",
+		"email":   "required|email",
+		"message": "required|min_len:10",
+	})
+	if err != nil || validator.Fails() {
+		if validator != nil {
+			inertiafacades.Inertia().FlashErrors(ctx, validator.Errors())
+		}
+		return inertiafacades.Inertia().Redirect(ctx, "/contact")
+	}
+
+	ctx.Request().Session().Flash("success", "Message received. Thanks, "+ctx.Request().Input("name")+"!")
+
+	return inertiafacades.Inertia().Redirect(ctx, "/contact")
+}
