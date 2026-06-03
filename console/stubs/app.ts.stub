@@ -5,6 +5,7 @@ import Layout from './Layout.vue'
 const pages = import.meta.glob<DefineComponent>('./Pages/**/*.vue')
 
 createInertiaApp({
+  title: (title) => (title ? `${title} · Goravel Inertia` : 'Goravel Inertia'),
   resolve: (name) => {
     const page = pages[`./Pages/${name}.vue`]
     if (!page) {

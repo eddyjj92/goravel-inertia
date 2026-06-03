@@ -1,4 +1,5 @@
 <template>
+  <Head title="Feed" />
   <div class="feed-page">
     <header class="head">
       <h1 class="page-title">Feed</h1>
@@ -28,7 +29,7 @@
 </template>
 
 <script setup lang="ts">
-import { router } from '@inertiajs/vue3'
+import { Head, router } from '@inertiajs/vue3'
 import { ref } from 'vue'
 
 interface FeedItem {

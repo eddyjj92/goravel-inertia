@@ -219,11 +219,21 @@ rendering** instead of returning a blank page (a warning is logged).
 
 Built on the shoulders of:
 
-- [Inertia.js](https://github.com/inertiajs/inertia) — the protocol & client.
-- [petaki/inertia-go](https://github.com/petaki/inertia-go) — the Go server engine.
-- [Goravel](https://github.com/goravel/framework) — the Go web framework.
-- [Vue](https://github.com/vuejs/core) & [Vite](https://github.com/vitejs/vite).
+- [Inertia.js](https://github.com/inertiajs/inertia) — the protocol & client (MIT).
+- [petaki/inertia-go](https://github.com/petaki/inertia-go) — the Go server engine (MIT).
+- [Goravel](https://github.com/goravel/framework) — the Go web framework (MIT).
+- [Vue](https://github.com/vuejs/core) & [Vite](https://github.com/vitejs/vite) (MIT).
+
+## Attribution
+
+The logo features the **Go gopher**, designed by [Renée French](https://reneefrench.blogspot.com)
+and licensed under [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/).
+It also incorporates the Inertia.js and Goravel marks to identify the projects
+this adapter integrates; those marks belong to their respective owners and are
+used here only for identification, not endorsement.
 
 ## License
 
-[MIT](LICENSE)
+Code is released under the [MIT License](LICENSE). Third-party dependencies keep
+their own licenses — see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)
+(MIT / BSD / Apache-2.0; the bundled MySQL driver is MPL-2.0, used unmodified).

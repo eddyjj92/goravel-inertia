@@ -12,6 +12,7 @@ createServer((page) =>
   createInertiaApp({
     page,
     render: renderToString,
+    title: (title) => (title ? `${title} · Goravel Inertia` : 'Goravel Inertia'),
     resolve: (name) => {
       const resolved = pages[`./Pages/${name}.vue`]
       if (!resolved) {

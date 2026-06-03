@@ -1,4 +1,5 @@
 <template>
+  <Head title="Contact" />
   <div class="contact-page">
     <header class="head">
       <h1 class="page-title">Contact</h1>
@@ -36,7 +37,7 @@
 </template>
 
 <script setup lang="ts">
-import { useForm } from '@inertiajs/vue3'
+import { Head, useForm } from '@inertiajs/vue3'
 
 const form = useForm({
   name: '',
