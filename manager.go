@@ -1,12 +1,31 @@
 package goravelinertia
 
 import (
+	"log"
 	"maps"
 	stdhttp "net/http"
 	"sync"
 
 	contractshttp "github.com/goravel/framework/contracts/http"
 )
+
+// countingResponseWriter tracks whether anything was written to the underlying
+// ResponseWriter, so the manager can safely retry rendering (CSR fallback) only
+// when the failed attempt produced no output, avoiding a partial double-write.
+type countingResponseWriter struct {
+	stdhttp.ResponseWriter
+	wrote bool
+}
+
+func (w *countingResponseWriter) WriteHeader(status int) {
+	w.wrote = true
+	w.ResponseWriter.WriteHeader(status)
+}
+
+func (w *countingResponseWriter) Write(b []byte) (int, error) {
+	w.wrote = true
+	return w.ResponseWriter.Write(b)
+}
 
 // defaultFlashKeys are the session keys mirrored into props.flash when no
 // flash_keys are configured.
@@ -53,16 +72,37 @@ func (m *InertiaManager) Render(ctx contractshttp.Context, component string, pro
 
 		maps.Copy(evaluated, props)
 
-		w := m.adapter.Writer(ctx)
 		r := m.adapter.Request(ctx).WithContext(m.propsContext(ctx))
 
-		return m.adapter.Inertia().Render(w, r, component, evaluated)
+		w := &countingResponseWriter{ResponseWriter: m.adapter.Writer(ctx)}
+		err := m.adapter.Inertia().Render(w, r, component, evaluated)
+		if err == nil {
+			return nil
+		}
+
+		// petaki fails the whole render (writing nothing) when the SSR server is
+		// unreachable. When a CSR fallback engine is configured and nothing was
+		// written yet, retry with SSR disabled so the user gets a client-rendered
+		// page instead of a blank response.
+		csr := m.adapter.CSR()
+		if csr == nil || w.wrote {
+			return err
+		}
+
+		log.Printf("[goravel-inertia] SSR render failed, falling back to CSR: %v", err)
+
+		return csr.Render(m.adapter.Writer(ctx), r, component, evaluated)
 	})
 }
 
-// Share registers a prop included on every Inertia response for all requests.
+// Share registers a prop included on every Inertia response for all requests. It
+// fans out to the CSR fallback engine too so fallback renders carry the same
+// shared props.
 func (m *InertiaManager) Share(key string, value any) {
 	m.adapter.Inertia().Share(key, value)
+	if csr := m.adapter.CSR(); csr != nil {
+		csr.Share(key, value)
+	}
 }
 
 // ShareFunc registers a shared prop resolved per request from the context.

@@ -2,6 +2,7 @@
 package providers
 
 import (
+	stdhttp "net/http"
 	"time"
 
 	"github.com/goravel/framework/contracts/foundation"
@@ -46,6 +47,7 @@ func (p *InertiaServiceProvider) Register(app foundation.Application) {
 		version := ""
 		ssr := false
 		ssrURL := "http://127.0.0.1:13714/render"
+		ssrTimeout := 5
 		url := ""
 		var flashKeys []string
 
@@ -59,6 +61,7 @@ func (p *InertiaServiceProvider) Register(app foundation.Application) {
 			version = config.GetString("inertia.version", "")
 			ssr = config.GetBool("inertia.ssr", false)
 			ssrURL = config.GetString("inertia.ssr_url", "http://127.0.0.1:13714/render")
+			ssrTimeout = config.GetInt("inertia.ssr_timeout", 5)
 			url = config.GetString("app.url", "")
 			flashKeys = toStringSlice(config.Get("inertia.flash_keys"))
 
@@ -77,14 +80,21 @@ func (p *InertiaServiceProvider) Register(app foundation.Application) {
 		}
 
 		inertia := petaki.New(url, rootView, version)
-
-		if ssr {
-			inertia.EnableSsr(ssrURL)
-		}
-
 		inertia.ShareFunc("vite", vite.TemplateFunc())
 
 		adapter := goravelinertia.NewAdapter(inertia)
+
+		if ssr {
+			inertia.EnableSsr(ssrURL, &stdhttp.Client{Timeout: time.Duration(ssrTimeout) * time.Second})
+
+			// CSR fallback engine: identical config but SSR disabled. The manager
+			// renders with it when an SSR render fails, so an unreachable SSR server
+			// degrades to client-side rendering instead of a blank page.
+			csr := petaki.New(url, rootView, version)
+			csr.ShareFunc("vite", vite.TemplateFunc())
+			adapter.SetCSR(csr)
+		}
+
 		manager := goravelinertia.NewInertiaManager(adapter, url, version, flashKeys...)
 
 		return manager, nil
