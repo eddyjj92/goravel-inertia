@@ -12,6 +12,8 @@ import (
 // flash_keys are configured.
 var defaultFlashKeys = []string{"success", "error", "warning", "info", "message"}
 
+// InertiaManager is the Goravel-facing implementation of the Inertia protocol,
+// adapting Goravel's http.Context to the underlying petaki/inertia-go engine.
 type InertiaManager struct {
 	mu          sync.RWMutex
 	adapter     *Adapter
@@ -21,6 +23,8 @@ type InertiaManager struct {
 	sharedFuncs map[string]func(contractshttp.Context) any
 }
 
+// NewInertiaManager builds a manager. flashKeys overrides the session keys mirrored
+// into props.flash; when omitted it falls back to defaultFlashKeys.
 func NewInertiaManager(adapter *Adapter, url string, version string, flashKeys ...string) *InertiaManager {
 	if len(flashKeys) == 0 {
 		flashKeys = defaultFlashKeys
@@ -35,6 +39,8 @@ func NewInertiaManager(adapter *Adapter, url string, version string, flashKeys .
 	}
 }
 
+// Render returns a response that renders the given component with props, merging
+// shared props and threading any per-request v3 props from the context.
 func (m *InertiaManager) Render(ctx contractshttp.Context, component string, props map[string]any) contractshttp.Response {
 	return newResponse(func() error {
 		m.mu.RLock()
@@ -54,10 +60,12 @@ func (m *InertiaManager) Render(ctx contractshttp.Context, component string, pro
 	})
 }
 
+// Share registers a prop included on every Inertia response for all requests.
 func (m *InertiaManager) Share(key string, value any) {
 	m.adapter.Inertia().Share(key, value)
 }
 
+// ShareFunc registers a shared prop resolved per request from the context.
 func (m *InertiaManager) ShareFunc(key string, fn func(contractshttp.Context) any) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -84,6 +92,8 @@ func (m *InertiaManager) Redirect(ctx contractshttp.Context, url string) contrac
 	return ctx.Response().Redirect(redirectStatus(ctx.Request().Method()), url)
 }
 
+// Location performs a full-page redirect to an external URL via the Inertia
+// protocol (409 + X-Inertia-Location for Inertia requests, 302 otherwise).
 func (m *InertiaManager) Location(ctx contractshttp.Context, url string) contractshttp.Response {
 	return newResponse(func() error {
 		w := m.adapter.Writer(ctx)
@@ -95,6 +105,7 @@ func (m *InertiaManager) Location(ctx contractshttp.Context, url string) contrac
 	})
 }
 
+// Version returns the configured asset version used for the version check.
 func (m *InertiaManager) Version() string {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
@@ -102,6 +113,7 @@ func (m *InertiaManager) Version() string {
 	return m.version
 }
 
+// URL returns the configured application base URL.
 func (m *InertiaManager) URL() string {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
@@ -109,6 +121,7 @@ func (m *InertiaManager) URL() string {
 	return m.url
 }
 
+// GetAdapter returns the underlying Goravel-to-petaki adapter.
 func (m *InertiaManager) GetAdapter() *Adapter {
 	return m.adapter
 }

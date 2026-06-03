@@ -29,13 +29,13 @@ func newFakeContext(req *http.Request, w http.ResponseWriter) *fakeContext {
 	return &fakeContext{base: context.Background(), vals: map[any]any{}, req: req, w: w}
 }
 
-func (f *fakeContext) Deadline() (time.Time, bool) { return f.base.Deadline() }
-func (f *fakeContext) Done() <-chan struct{}       { return f.base.Done() }
-func (f *fakeContext) Err() error                  { return f.base.Err() }
-func (f *fakeContext) Value(key any) any           { return f.vals[key] }
-func (f *fakeContext) Context() context.Context    { return f.base }
+func (f *fakeContext) Deadline() (time.Time, bool)   { return f.base.Deadline() }
+func (f *fakeContext) Done() <-chan struct{}         { return f.base.Done() }
+func (f *fakeContext) Err() error                    { return f.base.Err() }
+func (f *fakeContext) Value(key any) any             { return f.vals[key] }
+func (f *fakeContext) Context() context.Context      { return f.base }
 func (f *fakeContext) WithContext(c context.Context) { f.base = c }
-func (f *fakeContext) WithValue(k, v any)             { f.vals[k] = v }
+func (f *fakeContext) WithValue(k, v any)            { f.vals[k] = v }
 func (f *fakeContext) Request() contractshttp.ContextRequest {
 	return &fakeRequest{r: f.req, sess: f.sess}
 }

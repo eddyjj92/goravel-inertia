@@ -17,6 +17,12 @@ linters:
 linters-settings:
   goimports:
     local-prefixes: github.com/eddyjj92/goravel-inertia
+  revive:
+    rules:
+      # Goravel's http.Context embeds context.Context, so helpers legitimately take
+      # it alongside a context.Context; this rule would be a false positive.
+      - name: context-as-argument
+        disabled: true
 
 issues:
   exclude-use-default: false

@@ -1,17 +1,20 @@
+// Package providers wires the Inertia manager into the Goravel service container.
 package providers
 
 import (
 	"time"
 
-	contractshttp "github.com/goravel/framework/contracts/http"
 	"github.com/goravel/framework/contracts/foundation"
+	contractshttp "github.com/goravel/framework/contracts/http"
+
+	petaki "github.com/petaki/inertia-go"
 
 	goravelinertia "github.com/eddyjj92/goravel-inertia"
 	"github.com/eddyjj92/goravel-inertia/contracts"
 	"github.com/eddyjj92/goravel-inertia/facades"
-	petaki "github.com/petaki/inertia-go"
 )
 
+// InertiaServiceProvider registers and boots the Inertia singleton and facade.
 type InertiaServiceProvider struct {
 }
 
@@ -34,6 +37,7 @@ func toStringSlice(v any) []string {
 	}
 }
 
+// Register binds the Inertia manager as the "goravel.inertia" singleton.
 func (p *InertiaServiceProvider) Register(app foundation.Application) {
 	app.Singleton("goravel.inertia", func(app foundation.Application) (any, error) {
 		config := app.MakeConfig()
@@ -67,6 +71,7 @@ func (p *InertiaServiceProvider) Register(app foundation.Application) {
 	})
 }
 
+// Boot resolves the manager, registers default shared props, and exposes the facade.
 func (p *InertiaServiceProvider) Boot(app foundation.Application) {
 	instance, err := app.Make("goravel.inertia")
 	if err != nil {
@@ -80,7 +85,7 @@ func (p *InertiaServiceProvider) Boot(app foundation.Application) {
 		inertia.Share("appName", config.GetString("app.name"))
 	}
 
-	inertia.ShareFunc("timestamp", func(ctx contractshttp.Context) any {
+	inertia.ShareFunc("timestamp", func(_ contractshttp.Context) any {
 		return time.Now().Format("2006-01-02 15:04:05")
 	})
 

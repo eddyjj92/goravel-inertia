@@ -22,10 +22,13 @@ jobs:
       - name: Vet
         run: go vet ./...
 
+      # Install golangci-lint from source with the job's Go toolchain so it is built
+      # with the same Go version targeted in go.mod. The prebuilt binaries from
+      # golangci-lint-action lag behind and reject newer go directives.
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v6
-        with:
-          version: latest
+        run: |
+          go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.64.8
+          golangci-lint run ./...
 
       - name: Test
         run: go test -race -cover ./...
