@@ -41,7 +41,7 @@ func (c *HomeController) Index(ctx http.Context) http.Response {
 - 💬 **Flash & validation** bridged from Goravel's session into `props.flash` / `props.errors`.
 - 🔁 **Inertia-aware redirects** (303 on mutating methods) and external `Location` redirects.
 - 🏷️ **Asset versioning** auto-derived from the Vite manifest hash for cache busting.
-- 🛠️ **`inertia:install`** artisan command that scaffolds a full Vue 3 demo app.
+- 🛠️ **`inertia:install`** artisan command that scaffolds a full demo app — **Vue 3 or React**.
 
 ## Requirements
 
@@ -77,19 +77,25 @@ var Providers = []foundation.ServiceProvider{
 ```
 </details>
 
-Then scaffold the frontend, config, root template and a Vue 3 demo:
+Then scaffold the frontend, config, root template and a demo app. Pick a stack
+with `--stack` (`vue` is the default):
 
 ```bash
-go run . artisan inertia:install
+go run . artisan inertia:install                 # Vue 3 (default)
+go run . artisan inertia:install --stack=react   # React 18
 ```
 
-This creates `config/inertia.go`, `resources/inertia/app.gohtml`, the Vue app
+This creates `config/inertia.go`, `resources/inertia/app.gohtml`, the JS app
 under `resources/js/`, demo pages (Home / Feed / Contact / About) with their
 controllers, the `app/http/middleware/handle_inertia_requests.go` middleware (your
 shared-props entry point), `vite.config.ts`, `tsconfig.json` and `package.json`.
 It also wires `routes/web.go` (session + `HandleInertiaRequests` middleware, demo
 routes) and removes the default Goravel welcome view. Pass `--force` to overwrite
 existing files.
+
+The Go controllers, middleware, routes and config are identical across stacks —
+only the `resources/js/` frontend (`.vue` vs `.tsx`) and the JS toolchain
+(`package.json` / `vite.config.ts`) differ.
 
 Finally:
 

@@ -1,0 +1,14 @@
+import logo from '../assets/goravel-inertia.png'
+
+export default function Logo({ size = 40 }: { size?: number | string }) {
+  return (
+    <img
+      src={logo}
+      width={size}
+      height={size}
+      alt="Goravel Inertia"
+      className="gi-logo"
+      style={{ display: 'block', objectFit: 'contain' }}
+    />
+  )
+}

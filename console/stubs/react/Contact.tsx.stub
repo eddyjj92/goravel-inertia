@@ -1,0 +1,76 @@
+import { Head, useForm } from '@inertiajs/react'
+import type { FormEvent } from 'react'
+
+export default function Contact() {
+  const form = useForm({
+    name: '',
+    email: '',
+    message: '',
+  })
+
+  const submit = (e: FormEvent) => {
+    e.preventDefault()
+    form.post('/contact', {
+      preserveScroll: true,
+      onSuccess: () => form.reset(),
+    })
+  }
+
+  return (
+    <>
+      <Head title="Contact" />
+      <div className="contact-page">
+        <header className="head">
+          <h1 className="page-title">Contact</h1>
+          <p className="lead">
+            <strong>Flash + Validation</strong> demo — POST → validate → redirect back.
+            Errors arrive in <code>props.errors</code>, success in{' '}
+            <code>props.flash.success</code>.
+          </p>
+        </header>
+
+        <form className="form card" onSubmit={submit}>
+          <label className={form.errors.name ? 'invalid' : ''}>
+            <span className="label">Name</span>
+            <input
+              type="text"
+              name="name"
+              placeholder="Ada Lovelace"
+              value={form.data.name}
+              onChange={(e) => form.setData('name', e.target.value)}
+            />
+            {form.errors.name && <span className="error">{form.errors.name}</span>}
+          </label>
+
+          <label className={form.errors.email ? 'invalid' : ''}>
+            <span className="label">Email</span>
+            <input
+              type="text"
+              name="email"
+              placeholder="ada@example.com"
+              value={form.data.email}
+              onChange={(e) => form.setData('email', e.target.value)}
+            />
+            {form.errors.email && <span className="error">{form.errors.email}</span>}
+          </label>
+
+          <label className={form.errors.message ? 'invalid' : ''}>
+            <span className="label">Message</span>
+            <textarea
+              name="message"
+              rows={4}
+              placeholder="Say hi…"
+              value={form.data.message}
+              onChange={(e) => form.setData('message', e.target.value)}
+            />
+            {form.errors.message && <span className="error">{form.errors.message}</span>}
+          </label>
+
+          <button type="submit" className="btn" disabled={form.processing}>
+            {form.processing ? 'Sending…' : 'Send message'}
+          </button>
+        </form>
+      </div>
+    </>
+  )
+}

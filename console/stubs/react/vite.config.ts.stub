@@ -1,0 +1,76 @@
+import { defineConfig, type PluginOption, type ViteDevServer } from 'vite'
+import react from '@vitejs/plugin-react'
+import { resolve } from 'path'
+import { writeFileSync, rmSync } from 'fs'
+
+// goravelHot writes public/hot with the dev-server URL while `vite` runs (and
+// removes it on exit), Laravel-style. The Go backend reads that file and loads
+// assets from the dev server (HMR) instead of the production manifest — so
+// `go run .` needs no VITE_DEV_URL env var during development.
+function goravelHot(): PluginOption {
+  const hotFile = resolve(__dirname, 'public/hot')
+  const clean = () => {
+    try {
+      rmSync(hotFile)
+    } catch {
+      // hot file already gone
+    }
+  }
+
+  return {
+    name: 'goravel-hot',
+    apply: 'serve',
+    configureServer(server: ViteDevServer) {
+      const write = () => {
+        const { https, host, port } = server.config.server
+        const proto = https ? 'https' : 'http'
+        const hostname = typeof host === 'string' ? host : 'localhost'
+        writeFileSync(hotFile, `${proto}://${hostname}:${port ?? 5173}`)
+      }
+
+      server.httpServer?.once('listening', write)
+      process.on('SIGINT', () => {
+        clean()
+        process.exit()
+      })
+      process.on('SIGTERM', () => {
+        clean()
+        process.exit()
+      })
+      process.on('exit', clean)
+    },
+  }
+}
+
+export default defineConfig(({ command }) => ({
+  // Assets are served from /build in production (see routes static mapping) but
+  // from the dev server root in development.
+  base: command === 'build' ? '/build/' : '/',
+  plugins: [react(), goravelHot()],
+  root: '.',
+  // Goravel serves ./public itself; outDir lives inside it, so disable Vite's
+  // public dir copy to avoid the overlap warning and recursive copies.
+  publicDir: false,
+  build: {
+    outDir: 'public/build',
+    manifest: true,
+    rollupOptions: {
+      input: 'resources/js/app.tsx',
+    },
+  },
+  server: {
+    port: 5173,
+    strictPort: true,
+    // The page is served by Goravel (:3000) while assets come from the Vite dev
+    // server (:5173). Without an explicit origin, imported assets (e.g. the logo)
+    // get root-relative URLs that the browser resolves against :3000 → 404. Set
+    // origin so Vite emits absolute dev-server URLs in development.
+    origin: 'http://localhost:5173',
+    cors: true,
+  },
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, 'resources/js'),
+    },
+  },
+}))

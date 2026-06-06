@@ -4,6 +4,7 @@ package console
 import (
 	"embed"
 	"fmt"
+	"maps"
 	"os"
 	"path/filepath"
 	"sort"
@@ -13,11 +14,12 @@ import (
 	"github.com/goravel/framework/contracts/console/command"
 )
 
-//go:embed stubs/*
+//go:embed all:stubs
 var stubs embed.FS
 
-// InstallCommand scaffolds the Inertia.js (Vue 3) frontend, demo pages, root
-// template and config into a Goravel application, mirroring an artisan installer.
+// InstallCommand scaffolds the Inertia.js frontend (Vue 3 or React), demo pages,
+// root template and config into a Goravel application, mirroring an artisan
+// installer.
 type InstallCommand struct{}
 
 // NewInstallCommand builds the installer command.
@@ -25,37 +27,77 @@ func NewInstallCommand() *InstallCommand {
 	return &InstallCommand{}
 }
 
-// fileMap maps an embedded stub to its destination path in the application.
-// routes/web.go is handled separately (it needs the module name templated in).
-var fileMap = map[string]string{
-	"stubs/config_inertia.go.stub": "config/inertia.go",
-	"stubs/app.gohtml.stub":        "resources/inertia/app.gohtml",
-	"stubs/app.ts.stub":            "resources/js/app.ts",
-	"stubs/ssr.ts.stub":            "resources/js/ssr.ts",
-	"stubs/Layout.vue.stub":        "resources/js/Layout.vue",
-	"stubs/Logo.vue.stub":          "resources/js/components/Logo.vue",
-	"stubs/goravel-inertia.png":    "resources/js/assets/goravel-inertia.png",
-	"stubs/favicon.png":            "public/favicon.png",
-	"stubs/Home.vue.stub":          "resources/js/Pages/Home.vue",
-	"stubs/Feed.vue.stub":          "resources/js/Pages/Feed.vue",
-	"stubs/Contact.vue.stub":       "resources/js/Pages/Contact.vue",
-	"stubs/About.vue.stub":         "resources/js/Pages/About.vue",
-	"stubs/global.d.ts.stub":       "resources/js/types/global.d.ts",
+// defaultStack is scaffolded when --stack is omitted.
+const defaultStack = "vue"
 
-	"stubs/home_controller.go.stub":    "app/http/controllers/home_controller.go",
-	"stubs/feed_controller.go.stub":    "app/http/controllers/feed_controller.go",
-	"stubs/contact_controller.go.stub": "app/http/controllers/contact_controller.go",
-	"stubs/about_controller.go.stub":   "app/http/controllers/about_controller.go",
+// sharedFileMap maps stack-independent stubs (Go controllers, middleware, config,
+// brand assets) to their destination in the application. routes/web.go is handled
+// separately (it needs the module name templated in).
+var sharedFileMap = map[string]string{
+	"stubs/shared/config_inertia.go.stub": "config/inertia.go",
+	"stubs/shared/goravel-inertia.png":    "resources/js/assets/goravel-inertia.png",
+	"stubs/shared/favicon.png":            "public/favicon.png",
 
-	"stubs/handle_inertia_requests.go.stub": "app/http/middleware/handle_inertia_requests.go",
+	"stubs/shared/home_controller.go.stub":    "app/http/controllers/home_controller.go",
+	"stubs/shared/feed_controller.go.stub":    "app/http/controllers/feed_controller.go",
+	"stubs/shared/contact_controller.go.stub": "app/http/controllers/contact_controller.go",
+	"stubs/shared/about_controller.go.stub":   "app/http/controllers/about_controller.go",
 
-	"stubs/vite.config.ts.stub": "vite.config.ts",
-	"stubs/tsconfig.json.stub":  "tsconfig.json",
-	"stubs/package.json.stub":   "package.json",
+	"stubs/shared/handle_inertia_requests.go.stub": "app/http/middleware/handle_inertia_requests.go",
+}
+
+// stackFileMaps holds the frontend stubs per supported stack. The chosen set is
+// merged with sharedFileMap at install time.
+var stackFileMaps = map[string]map[string]string{
+	"vue": {
+		"stubs/vue/app.gohtml.stub":     "resources/inertia/app.gohtml",
+		"stubs/vue/app.ts.stub":         "resources/js/app.ts",
+		"stubs/vue/ssr.ts.stub":         "resources/js/ssr.ts",
+		"stubs/vue/Layout.vue.stub":     "resources/js/Layout.vue",
+		"stubs/vue/Logo.vue.stub":       "resources/js/components/Logo.vue",
+		"stubs/vue/Home.vue.stub":       "resources/js/Pages/Home.vue",
+		"stubs/vue/Feed.vue.stub":       "resources/js/Pages/Feed.vue",
+		"stubs/vue/Contact.vue.stub":    "resources/js/Pages/Contact.vue",
+		"stubs/vue/About.vue.stub":      "resources/js/Pages/About.vue",
+		"stubs/vue/global.d.ts.stub":    "resources/js/types/global.d.ts",
+		"stubs/vue/vite.config.ts.stub": "vite.config.ts",
+		"stubs/vue/tsconfig.json.stub":  "tsconfig.json",
+		"stubs/vue/package.json.stub":   "package.json",
+	},
+	"react": {
+		"stubs/react/app.gohtml.stub":     "resources/inertia/app.gohtml",
+		"stubs/react/app.tsx.stub":        "resources/js/app.tsx",
+		"stubs/react/ssr.tsx.stub":        "resources/js/ssr.tsx",
+		"stubs/react/Layout.tsx.stub":     "resources/js/Layout.tsx",
+		"stubs/react/Logo.tsx.stub":       "resources/js/components/Logo.tsx",
+		"stubs/react/Home.tsx.stub":       "resources/js/Pages/Home.tsx",
+		"stubs/react/Feed.tsx.stub":       "resources/js/Pages/Feed.tsx",
+		"stubs/react/Contact.tsx.stub":    "resources/js/Pages/Contact.tsx",
+		"stubs/react/About.tsx.stub":      "resources/js/Pages/About.tsx",
+		"stubs/react/global.d.ts.stub":    "resources/js/types/global.d.ts",
+		"stubs/react/vite.config.ts.stub": "vite.config.ts",
+		"stubs/react/tsconfig.json.stub":  "tsconfig.json",
+		"stubs/react/package.json.stub":   "package.json",
+	},
+}
+
+// fileMapFor returns the full stub→destination map for a stack (shared + stack),
+// or an error if the stack is unknown.
+func fileMapFor(stack string) (map[string]string, error) {
+	stackMap, ok := stackFileMaps[stack]
+	if !ok {
+		return nil, fmt.Errorf("unknown stack %q (supported: react, vue)", stack)
+	}
+
+	merged := make(map[string]string, len(sharedFileMap)+len(stackMap))
+	maps.Copy(merged, sharedFileMap)
+	maps.Copy(merged, stackMap)
+	return merged, nil
 }
 
 const (
 	webRoutesPath     = "routes/web.go"
+	webRoutesStub     = "stubs/shared/web.go.stub"
 	welcomePath       = "resources/views/welcome.tmpl"
 	modulePlaceholder = "__MODULE__"
 )
@@ -67,7 +109,7 @@ func (r *InstallCommand) Signature() string {
 
 // Description is shown in the artisan command list.
 func (r *InstallCommand) Description() string {
-	return "Scaffold the Inertia.js (Vue 3) frontend, demo pages, root template and config"
+	return "Scaffold the Inertia.js frontend (Vue 3 or React), demo pages, root template and config"
 }
 
 // Extend declares the command category and flags.
@@ -79,6 +121,12 @@ func (r *InstallCommand) Extend() command.Extend {
 				Name:  "force",
 				Usage: "Overwrite files that already exist",
 			},
+			&command.StringFlag{
+				Name:    "stack",
+				Value:   defaultStack,
+				Usage:   "Frontend stack to scaffold: vue or react",
+				Aliases: []string{"s"},
+			},
 		},
 	}
 }
@@ -87,8 +135,17 @@ func (r *InstallCommand) Extend() command.Extend {
 // (replacing the default welcome view), then prints the remaining manual step.
 func (r *InstallCommand) Handle(ctx console.Context) error {
 	force := ctx.OptionBool("force")
+	stack := strings.ToLower(strings.TrimSpace(ctx.Option("stack")))
+	if stack == "" {
+		stack = defaultStack
+	}
 
-	created, skipped, err := scaffold(force)
+	created, skipped, err := scaffold(stack, force)
+	if err != nil && len(created) == 0 && len(skipped) == 0 {
+		// Bad stack (or other pre-write failure) — nothing scaffolded.
+		return err
+	}
+	ctx.Info(fmt.Sprintf("  stack: %s", stack))
 	for _, dst := range created {
 		ctx.Info(fmt.Sprintf("  created: %s", dst))
 	}
@@ -125,11 +182,16 @@ func (r *InstallCommand) Handle(ctx console.Context) error {
 	return nil
 }
 
-// scaffold writes the stub files into the current working directory relative to
-// their mapped destinations, skipping existing files unless force is set. It
-// returns the created and skipped destination paths. Extracted from Handle so the
-// file logic is testable without a console context.
-func scaffold(force bool) (created, skipped []string, err error) {
+// scaffold writes the stub files for the chosen stack into the current working
+// directory relative to their mapped destinations, skipping existing files unless
+// force is set. It returns the created and skipped destination paths. Extracted
+// from Handle so the file logic is testable without a console context.
+func scaffold(stack string, force bool) (created, skipped []string, err error) {
+	fileMap, mapErr := fileMapFor(stack)
+	if mapErr != nil {
+		return nil, nil, mapErr
+	}
+
 	// Stable order regardless of map iteration.
 	srcs := make([]string, 0, len(fileMap))
 	for src := range fileMap {
@@ -187,7 +249,7 @@ func moduleName() (string, error) {
 // existing file. A customized web.go is left untouched and the generated version
 // is written alongside for manual merging.
 func installWebRoutes(module string, force bool) (string, error) {
-	stub, err := stubs.ReadFile("stubs/web.go.stub")
+	stub, err := stubs.ReadFile(webRoutesStub)
 	if err != nil {
 		return "", fmt.Errorf("read web.go stub: %w", err)
 	}

@@ -1,0 +1,39 @@
+import { createInertiaApp } from '@inertiajs/react'
+import { createRoot } from 'react-dom/client'
+import { createElement, type ComponentType, type ReactNode } from 'react'
+import Layout from './Layout'
+
+// A page module: a React component with an optional persistent layout.
+type PageModule = {
+  default: ComponentType & { layout?: (page: ReactNode) => ReactNode }
+}
+
+const pages = import.meta.glob<PageModule>('./Pages/**/*.tsx')
+
+createInertiaApp({
+  progress: {
+    // The delay after which the progress bar will appear, in milliseconds...
+    delay: 250,
+    // The color of the progress bar...
+    color: '#29d',
+    // Whether to include the default NProgress styles...
+    includeCSS: true,
+    // Whether the NProgress spinner will be shown...
+    showSpinner: false,
+  },
+  title: (title) => (title ? `${title} · Goravel Inertia` : 'Goravel Inertia'),
+  resolve: async (name) => {
+    const page = pages[`./Pages/${name}.tsx`]
+    if (!page) {
+      throw new Error(`Page not found: ${name}`)
+    }
+    const module = await page()
+    // Persistent layout: wrap every page in Layout unless it sets its own.
+    module.default.layout =
+      module.default.layout ?? ((page) => createElement(Layout, null, page))
+    return module.default
+  },
+  setup({ el, App, props }) {
+    createRoot(el).render(createElement(App, props))
+  },
+})
