@@ -97,12 +97,12 @@ initial + partial reload. Go core unchanged → existing tests stay green.
 | Version | Theme |
 |---------|-------|
 | **v0.3.0** | React support (above). |
-| **v0.4.0** | Stack polish + (optional) Svelte; shared stub abstraction proven by ≥2 stacks. |
+| **v0.4.0** | Stack polish: shared stub abstraction proven across Vue + React. |
 | **v0.5.0** | Hardening: automated `setup/` tests (currently manual), CHANGELOG, API surface review. |
-| **v1.0.0** | **Stable API commitment.** Multi-stack (Vue + React), full coverage, docs, semver freeze. |
+| **v1.0.0** | **Stable API commitment.** Vue + React stacks, full coverage, docs, semver freeze. |
 
 ### v1.0.0 exit criteria
-- [ ] ≥2 first-class stacks (Vue + React) scaffolding cleanly.
+- [ ] Both first-class stacks (Vue + React) scaffolding cleanly.
 - [ ] `contracts.Inertia` reviewed and frozen (no planned breaking changes).
 - [ ] Automated tests for `setup/` (package-install path).
 - [ ] `CHANGELOG.md` maintained.
