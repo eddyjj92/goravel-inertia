@@ -154,19 +154,23 @@ func share(ctx http.Context) map[string]any {
 Validation errors and session flash are shared by the package automatically — you
 only own `share()`.
 
-You can also register shared props imperatively via the facade (e.g. in the
-provider), included on every response:
+You can also register shared props imperatively via the facade (e.g. in a
+provider's `Boot`). `Share` takes a static value; `ShareFunc` is resolved per
+request from the context:
 
 ```go
 facades.Inertia().Share("appName", "My App")
-facades.Inertia().ShareFunc("auth", func(ctx http.Context) any {
-    var user map[string]any
-    if err := facades.Auth(ctx).User(&user); err != nil {
+facades.Inertia().ShareFunc("user", func(ctx http.Context) any {
+    if !ctx.Request().HasSession() {
         return nil
     }
-    return user
+    return ctx.Request().Session().Get("user")
 })
 ```
+
+> Inertia here is session-based: persist the user with
+> `ctx.Request().Session().Put("user", user)` at login and
+> `ctx.Request().Session().Forget("user")` at logout.
 
 ### Inertia v3 props
 
