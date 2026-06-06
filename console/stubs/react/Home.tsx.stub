@@ -15,7 +15,7 @@ export default function Home({ message, stats }: HomeProps) {
           <Logo size={120} />
           <div className="hero-body">
             <span className="badge">Inertia v3 · SSR · Vite</span>
-            <h1 className="hero-title">{message}</h1>
+            <h1 className="hero-title">{message} + React</h1>
             <p className="lead">
               A Goravel adapter for Inertia.js — server-driven SPAs with React, no API
               layer. This page demos a <strong>deferred prop</strong>: the stats below

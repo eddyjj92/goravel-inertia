@@ -21,7 +21,7 @@ export default function About({ title, content }: AboutProps) {
       <div className="about-page">
         <header className="head">
           <h1 className="page-title">{title}</h1>
-          <p className="lead">{content}</p>
+          <p className="lead">{content} Frontend: React.</p>
         </header>
 
         <section className="card">

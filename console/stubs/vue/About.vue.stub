@@ -3,7 +3,7 @@
   <div class="about-page">
     <header class="head">
       <h1 class="page-title">{{ title }}</h1>
-      <p class="lead">{{ content }}</p>
+      <p class="lead">{{ content }} Frontend: Vue 3.</p>
     </header>
 
     <section class="card">

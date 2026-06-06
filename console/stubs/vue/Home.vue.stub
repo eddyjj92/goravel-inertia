@@ -5,7 +5,7 @@
       <Logo :size="120" class="hero-logo" />
       <div class="hero-body">
         <span class="badge">Inertia v3 · SSR · Vite</span>
-        <h1 class="hero-title">{{ message }}</h1>
+        <h1 class="hero-title">{{ message }} + Vue 3</h1>
         <p class="lead">
           A Goravel adapter for Inertia.js — server-driven SPAs with Vue 3, no API
           layer. This page demos a <strong>deferred prop</strong>: the stats below

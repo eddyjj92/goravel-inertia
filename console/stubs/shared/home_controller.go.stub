@@ -27,6 +27,6 @@ func (r *HomeController) Index(ctx http.Context) http.Response {
 	})
 
 	return inertiafacades.Inertia().Render(ctx, "Home", map[string]any{
-		"message": "Goravel + Inertia + Vue 3",
+		"message": "Goravel + Inertia",
 	})
 }
