@@ -1,10 +1,15 @@
 import { createInertiaApp } from '@inertiajs/react'
 import createServer from '@inertiajs/react/server'
 import ReactDOMServer from 'react-dom/server'
-import { createElement, type ReactNode } from 'react'
+import { createElement, type ComponentType, type ReactNode } from 'react'
 import Layout from './Layout'
 
-const pages = import.meta.glob('./Pages/**/*.tsx')
+// A page module: a React component with an optional persistent layout.
+type PageModule = {
+  default: ComponentType & { layout?: (page: ReactNode) => ReactNode }
+}
+
+const pages = import.meta.glob<PageModule>('./Pages/**/*.tsx')
 
 // SSR entry. `createServer` starts a Node HTTP server (default :13714, endpoint
 // /render) that the Go backend POSTs each Inertia page to.
@@ -18,10 +23,10 @@ createServer((page) =>
       if (!resolved) {
         throw new Error(`Page not found: ${name}`)
       }
-      const module = (await resolved()) as { default: { layout?: (page: ReactNode) => ReactNode } }
+      const module = await resolved()
       module.default.layout =
         module.default.layout ?? ((page) => createElement(Layout, null, page))
-      return module
+      return module.default
     },
     setup: ({ App, props }) => createElement(App, props),
   }),
