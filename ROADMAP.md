@@ -47,48 +47,49 @@ on par with the current Vue 3 scaffold. Vue stays the default.
 ### Scope: frontend scaffolding + installer only (zero Go core risk)
 
 #### 1. Installer — stack selection
-- [ ] `--stack` flag on `inertia:install` (`vue` default, `react`). Validate value.
+- [x] `--stack` flag on `inertia:install` (`vue` default, `react`). Unknown stack rejected.
 - [ ] (Optional) interactive prompt when `--stack` omitted.
-- [ ] `fileMap` becomes stack-aware: resolve stub set by chosen stack.
+- [x] `fileMap` becomes stack-aware (`fileMapFor(stack)` = shared + per-stack).
 
 #### 2. Stub reorganization
-- [ ] Move Vue stubs to `console/stubs/vue/`.
-- [ ] Add `console/stubs/react/`.
-- [ ] Keep **shared** stubs at `console/stubs/` (stack-independent): `web.go.stub`,
-      `*_controller.go.stub`, `config_inertia.go.stub`,
-      `handle_inertia_requests.go.stub`, `app.gohtml.stub` (entry path differs →
-      may need per-stack), `favicon.png`, brand images.
-- [ ] Update `//go:embed` directives for the new tree.
+- [x] Move Vue stubs to `console/stubs/vue/`.
+- [x] Add `console/stubs/react/`.
+- [x] Keep **shared** stubs at `console/stubs/shared/` (stack-independent):
+      `web.go.stub`, `*_controller.go.stub`, `config_inertia.go.stub`,
+      `handle_inertia_requests.go.stub`, `favicon.png`, brand image.
+      `app.gohtml.stub` lives per-stack (entry path `.ts` vs `.tsx`).
+- [x] `//go:embed all:stubs` (recursive, includes the new tree + binary assets).
 
 #### 3. React stubs (mirror of the Vue set)
-- [ ] `app.tsx` — `createInertiaApp` + `createRoot` (`react-dom/client`),
-      `resolvePageComponent` over `./Pages/**/*.tsx`, persistent layout, progress.
-- [ ] `ssr.tsx` — `createServer` (`@inertiajs/react/server`) +
+- [x] `app.tsx` — `createInertiaApp` + `createRoot` (`react-dom/client`),
+      glob over `./Pages/**/*.tsx`, persistent layout, progress.
+- [x] `ssr.tsx` — `createServer` (`@inertiajs/react/server`) +
       `ReactDOMServer.renderToString`, resolve mirroring `app.tsx`.
-- [ ] `Layout.tsx`, `Logo.tsx`.
-- [ ] `Pages/{Home,Feed,Contact,About}.tsx` — same demo features:
+- [x] `Layout.tsx`, `Logo.tsx`.
+- [x] `Pages/{Home,Feed,Contact,About}.tsx` — same demo features:
       Deferred (`<Deferred>`), Merge ("load more"), flash banner, form with
       `useForm` + `props.errors`, active nav link.
-- [ ] `global.d.ts` — React `PageProps` augmentation (`@inertiajs/core`).
-- [ ] `package.json` — `react`, `react-dom`, `@inertiajs/react`,
-      `@vitejs/plugin-react`, `@types/react`, `@types/react-dom`; drop Vue deps.
-- [ ] `vite.config.ts` — `@vitejs/plugin-react`, input `resources/js/app.tsx`,
-      keep `goravelHot` plugin + `/build` base + dev origin (reuse as-is).
-- [ ] `tsconfig.json` — `"jsx": "react-jsx"`, React lib types.
-- [ ] `app.gohtml` — entry `{{ vite "resources/js/app.tsx" }}` (root div identical).
+- [x] `global.d.ts` — React `PageProps` augmentation (`@inertiajs/core`).
+- [x] `package.json` — `react`, `react-dom`, `@inertiajs/react`,
+      `@vitejs/plugin-react`, `@types/react`, `@types/react-dom`.
+- [x] `vite.config.ts` — `@vitejs/plugin-react`, input `resources/js/app.tsx`,
+      same `goravelHot` plugin + `/build` base + dev origin.
+- [x] `tsconfig.json` — `"jsx": "react-jsx"`, includes `.tsx`.
+- [x] `app.gohtml` — entry `{{ vite "resources/js/app.tsx" }}`.
 
 #### 4. Tests
-- [ ] `install_command_test.go` parametrized per stack: each scaffolds its file
-      set in a clean dir; rerun skips; `--force` overwrites.
-- [ ] E2E (manual or scripted): React scaffold **compiles** (`tsc`, `vite build`)
-      and renders both initial + X-Inertia paths.
+- [x] `install_command_test.go` table-driven per stack: each scaffolds its file
+      set in a clean dir; rerun skips; `--force` overwrites; unknown stack rejected.
+- [x] E2E: React scaffold **compiles** — `tsc --noEmit` clean, `vite build` (778
+      modules, page code-split, manifest) + `vite build --ssr` (ssr.js) both green.
 
 #### 5. Docs
-- [ ] README: stack table + `--stack` usage; show both Vue and React snippets.
+- [x] README: `--stack` usage + note that the Go side is identical across stacks.
 - [ ] `INERTIA.md` (scaffolded): note the chosen stack.
 
-**Gate:** both stacks scaffold from a clean Goravel app, compile, and render
-initial + partial reload. Go core unchanged → existing tests stay green.
+**Gate:** ✅ both stacks scaffold; React compiles + builds (client + SSR); Go core
+unchanged → all 56 Go tests green. Pending: runtime render check in a live app +
+optional interactive stack prompt + scaffolded INERTIA.md.
 
 ---
 

@@ -1,0 +1,44 @@
+import { Head } from '@inertiajs/react'
+
+interface AboutProps {
+  title: string
+  content: string
+}
+
+const deps = [
+  { name: 'Goravel', tag: 'go', text: 'The Go web framework', href: 'https://github.com/goravel/framework' },
+  { name: 'goravel-inertia', tag: 'adapter', text: 'This Inertia adapter', href: 'https://github.com/eddyjj92/goravel-inertia' },
+  { name: 'Inertia.js', tag: 'inertia', text: 'v3 protocol + React adapter', href: 'https://github.com/inertiajs/inertia' },
+  { name: 'React', tag: 'react', text: 'The UI library', href: 'https://github.com/facebook/react' },
+  { name: 'petaki/inertia-go', tag: 'petaki', text: 'Server engine', href: 'https://github.com/petaki/inertia-go' },
+  { name: 'Vite', tag: 'vite', text: 'Dev server + production build', href: 'https://github.com/vitejs/vite' },
+]
+
+export default function About({ title, content }: AboutProps) {
+  return (
+    <>
+      <Head title={title} />
+      <div className="about-page">
+        <header className="head">
+          <h1 className="page-title">{title}</h1>
+          <p className="lead">{content}</p>
+        </header>
+
+        <section className="card">
+          <h2 className="sub">Stack</h2>
+          <ul className="stack">
+            {deps.map((dep) => (
+              <li key={dep.href}>
+                <a className="dep" href={dep.href} target="_blank" rel="noopener noreferrer">
+                  <span className={`tag ${dep.tag}`}>{dep.name}</span>
+                  <span className="dep-text">{dep.text}</span>
+                  <span className="ext" aria-hidden="true">↗</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      </div>
+    </>
+  )
+}

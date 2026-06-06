@@ -1,0 +1,52 @@
+import { Deferred, Head } from '@inertiajs/react'
+import Logo from '../components/Logo'
+
+interface HomeProps {
+  message: string
+  stats?: Record<string, string | number>
+}
+
+export default function Home({ message, stats }: HomeProps) {
+  return (
+    <>
+      <Head title="Home" />
+      <div className="home">
+        <section className="hero card">
+          <Logo size={120} />
+          <div className="hero-body">
+            <span className="badge">Inertia v3 · SSR · Vite</span>
+            <h1 className="hero-title">{message}</h1>
+            <p className="lead">
+              A Goravel adapter for Inertia.js — server-driven SPAs with React, no API
+              layer. This page demos a <strong>deferred prop</strong>: the stats below
+              stream in after the initial render.
+            </p>
+          </div>
+        </section>
+
+        {/* Deferred prop demo: "stats" arrives after the first paint. */}
+        <Deferred
+          data="stats"
+          fallback={
+            <div className="stats">
+              {[0, 1, 2].map((n) => (
+                <div key={n} className="stat skeleton">
+                  <span className="bar" />
+                </div>
+              ))}
+            </div>
+          }
+        >
+          <div className="stats">
+            {Object.entries(stats ?? {}).map(([key, value]) => (
+              <div key={key} className="stat">
+                <span className="stat-value">{value}</span>
+                <span className="stat-label">{key}</span>
+              </div>
+            ))}
+          </div>
+        </Deferred>
+      </div>
+    </>
+  )
+}

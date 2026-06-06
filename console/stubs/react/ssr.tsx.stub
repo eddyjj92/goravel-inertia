@@ -1,0 +1,28 @@
+import { createInertiaApp } from '@inertiajs/react'
+import createServer from '@inertiajs/react/server'
+import ReactDOMServer from 'react-dom/server'
+import { createElement, type ReactNode } from 'react'
+import Layout from './Layout'
+
+const pages = import.meta.glob('./Pages/**/*.tsx')
+
+// SSR entry. `createServer` starts a Node HTTP server (default :13714, endpoint
+// /render) that the Go backend POSTs each Inertia page to.
+createServer((page) =>
+  createInertiaApp({
+    page,
+    render: ReactDOMServer.renderToString,
+    title: (title) => (title ? `${title} · Goravel Inertia` : 'Goravel Inertia'),
+    resolve: async (name) => {
+      const resolved = pages[`./Pages/${name}.tsx`]
+      if (!resolved) {
+        throw new Error(`Page not found: ${name}`)
+      }
+      const module = (await resolved()) as { default: { layout?: (page: ReactNode) => ReactNode } }
+      module.default.layout =
+        module.default.layout ?? ((page) => createElement(Layout, null, page))
+      return module
+    },
+    setup: ({ App, props }) => createElement(App, props),
+  }),
+)

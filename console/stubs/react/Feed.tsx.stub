@@ -1,0 +1,64 @@
+import { Head, router } from '@inertiajs/react'
+import { useState } from 'react'
+
+interface FeedItem {
+  id: number
+  title: string
+  body: string
+}
+
+interface FeedProps {
+  items: FeedItem[]
+  page: number
+  hasMore: boolean
+}
+
+export default function Feed({ items, page, hasMore }: FeedProps) {
+  const [loading, setLoading] = useState(false)
+
+  const loadMore = () => {
+    setLoading(true)
+    router.reload({
+      only: ['items', 'page', 'hasMore'],
+      data: { page: page + 1 },
+      onFinish: () => setLoading(false),
+    })
+  }
+
+  return (
+    <>
+      <Head title="Feed" />
+      <div className="feed-page">
+        <header className="head">
+          <h1 className="page-title">Feed</h1>
+          <p className="lead">
+            <strong>Merge prop</strong> demo — “Load more” does a partial reload and the
+            client <em>appends</em> the new items instead of replacing the list.
+          </p>
+        </header>
+
+        <ul className="feed">
+          {items.map((item) => (
+            <li key={item.id} className="feed-item card">
+              <span className="dot">{item.id}</span>
+              <div>
+                <strong>{item.title}</strong>
+                <span className="body">{item.body}</span>
+              </div>
+            </li>
+          ))}
+        </ul>
+
+        <div className="actions">
+          {hasMore ? (
+            <button className="btn" disabled={loading} onClick={loadMore}>
+              {loading ? 'Loading…' : 'Load more'}
+            </button>
+          ) : (
+            <p className="lead">That's everything.</p>
+          )}
+        </div>
+      </div>
+    </>
+  )
+}
