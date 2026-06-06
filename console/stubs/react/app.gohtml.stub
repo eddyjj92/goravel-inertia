@@ -4,11 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/png" href="/public/favicon.png" />
-    <title inertia>Goravel + Inertia</title>
+    <title data-inertia>Goravel + Inertia</title>
     {{ if .ssr }}{{ raw .ssr.Head }}{{ end }}
     {{ vite "resources/js/app.tsx" }}
 </head>
 <body>
-    {{ if .ssr }}{{ raw .ssr.Body }}{{ else }}<div id="app" data-page="{{ marshal .page }}"></div>{{ end }}
+    {{ if .ssr }}{{ raw .ssr.Body }}{{ else }}<div id="app"></div><script data-page="app" type="application/json">{{ marshal .page }}</script>{{ end }}
 </body>
 </html>

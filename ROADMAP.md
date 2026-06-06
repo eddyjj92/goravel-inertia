@@ -87,9 +87,27 @@ on par with the current Vue 3 scaffold. Vue stays the default.
 - [x] README: `--stack` usage + note that the Go side is identical across stacks.
 - [ ] `INERTIA.md` (scaffolded): note the chosen stack.
 
-**Gate:** ✅ both stacks scaffold; React compiles + builds (client + SSR); Go core
-unchanged → all 56 Go tests green. Pending: runtime render check in a live app +
-optional interactive stack prompt + scaffolded INERTIA.md.
+#### 6. Inertia v3 alignment (both stacks on the stable v3 client)
+- [x] Clients bumped to the stable **Inertia v3** line: `@inertiajs/react@3.x`
+      (React 19.2) and `@inertiajs/vue3@3.x` (Vue 3.5), plugin-vue 6 / plugin-react 5
+      (both kept on vite 6).
+- [x] **Root template migrated to the v3 transport.** v3 reads the initial page
+      from `<script data-page="app" type="application/json">…</script>` (verified in
+      `@inertiajs/core@3.3.1` `getInitialPageFromDOM`), not the legacy
+      `<div data-page>` attribute. Both `app.gohtml` stubs now emit
+      `<div id="app"></div>` + the JSON script. SSR `{{ raw .ssr.Body }}` already
+      gets the v3 `buildSSRBody` output unchanged.
+- [x] Head marker `inertia` → `data-inertia` (v3).
+- [x] `resolve()` returns `module.default` (component) to satisfy v3's stricter
+      `ComponentResolver` type.
+- [x] Regression test (`root_template_test.go`): renders the stub through petaki
+      and asserts the v3 script shape + valid, XSS-safe JSON
+      (`</script>` → `</script>`).
+
+**Gate:** ✅ both stacks scaffold; React + Vue compile and build (client + SSR) on
+the Inertia v3 client; root template verified v3-correct at runtime through petaki;
+all 57 Go tests green. Pending: in-browser render check in a live app + optional
+interactive stack prompt + scaffolded INERTIA.md.
 
 ---
 
