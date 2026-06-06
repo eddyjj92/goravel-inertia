@@ -88,10 +88,6 @@ go run .
 
 Open <http://localhost:3000>.
 
-> **Private repo note:** while the module is private, consumers must set
-> `GOPRIVATE=github.com/eddyjj92/*` and have git credentials configured for
-> `go get` to resolve it.
-
 ## Configuration
 
 `config/inertia.go`:
