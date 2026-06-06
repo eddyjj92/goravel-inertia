@@ -84,12 +84,43 @@ func (v *Vite) devServerURL() string {
 func (v *Vite) devTags(url string, entries []string) template.HTML {
 	var b strings.Builder
 
+	// React Fast Refresh needs a preamble injected before @vite/client. Vite emits
+	// it automatically when it serves the HTML, but here Goravel renders the root
+	// template, so we emit it ourselves (the Laravel @viteReactRefresh equivalent).
+	// Detected from a JSX/TSX entry so the Vue stack is unaffected.
+	if hasReactEntry(entries) {
+		b.WriteString(reactRefreshPreamble(url))
+	}
+
 	b.WriteString(moduleScript(url + "/@vite/client"))
 	for _, entry := range entries {
 		b.WriteString(moduleScript(url + "/" + strings.TrimLeft(entry, "/")))
 	}
 
 	return template.HTML(b.String())
+}
+
+// hasReactEntry reports whether any entry is a React (JSX/TSX) module.
+func hasReactEntry(entries []string) bool {
+	for _, entry := range entries {
+		if strings.HasSuffix(entry, ".tsx") || strings.HasSuffix(entry, ".jsx") {
+			return true
+		}
+	}
+	return false
+}
+
+// reactRefreshPreamble returns the @vitejs/plugin-react dev preamble that wires up
+// React Fast Refresh against the dev server at url. Mirrors Laravel's
+// @viteReactRefresh output.
+func reactRefreshPreamble(url string) string {
+	return `<script type="module">` +
+		`import RefreshRuntime from "` + template.HTMLEscapeString(url) + `/@react-refresh";` +
+		`RefreshRuntime.injectIntoGlobalHook(window);` +
+		`window.$RefreshReg$ = () => {};` +
+		`window.$RefreshSig$ = () => (type) => type;` +
+		`window.__vite_plugin_react_preamble_installed__ = true;` +
+		`</script>`
 }
 
 func (v *Vite) prodTags(entries []string) template.HTML {

@@ -20,6 +20,28 @@ func TestViteDevTagsFromDevURL(t *testing.T) {
 	}
 }
 
+func TestViteDevTagsReactRefreshPreamble(t *testing.T) {
+	v := NewVite("public", "build", filepath.Join(t.TempDir(), "hot"), "http://localhost:5173")
+
+	// React (.tsx) entry → preamble present, before @vite/client.
+	react := string(v.Render("resources/js/app.tsx"))
+	if !strings.Contains(react, "/@react-refresh") {
+		t.Errorf("missing react-refresh preamble for tsx entry: %s", react)
+	}
+	if !strings.Contains(react, "__vite_plugin_react_preamble_installed__") {
+		t.Errorf("preamble missing install flag: %s", react)
+	}
+	if strings.Index(react, "@react-refresh") > strings.Index(react, "@vite/client") {
+		t.Errorf("preamble must come before @vite/client: %s", react)
+	}
+
+	// Vue (.ts) entry → no React preamble.
+	vue := string(v.Render("resources/js/app.ts"))
+	if strings.Contains(vue, "@react-refresh") {
+		t.Errorf("vue entry should not emit react preamble: %s", vue)
+	}
+}
+
 func TestViteHotFileTakesPrecedence(t *testing.T) {
 	hot := filepath.Join(t.TempDir(), "hot")
 	if err := os.WriteFile(hot, []byte("http://127.0.0.1:5199\n"), 0o600); err != nil {
