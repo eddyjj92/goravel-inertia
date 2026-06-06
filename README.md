@@ -267,8 +267,13 @@ automatically (`public/hot` → `VITE_DEV_URL` → manifest).
 ## SSR
 
 ```bash
-npm run build:ssr        # client build + SSR bundle (bootstrap/ssr/ssr.js)
-npm run ssr              # SSR Node server on :13714
+npm run build:ssr          # client build + SSR bundle (bootstrap/ssr/ssr.js)
+npm run ssr                # SSR Node server on :13714 (keeps running, in its own shell)
+```
+
+Then, in another shell:
+
+```bash
 INERTIA_SSR=true go run .
 ```
 
