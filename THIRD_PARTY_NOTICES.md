@@ -58,15 +58,31 @@ No dependency is under a copyleft license (GPL/LGPL/AGPL/MPL).
 
 ## Frontend (npm) — scaffolded by `inertia:install`
 
+`inertia:install` scaffolds one of two stacks (`--stack=vue` or `--stack=react`);
+the dependencies below cover both.
+
 ### MIT License
+
+Shared:
+
+- @inertiajs/core — Copyright (c) Jonathan Reinink
+- vite — Copyright (c) 2019-present VoidZero Inc. and Vite contributors
+- @types/node — Copyright (c) Microsoft Corporation and DefinitelyTyped contributors
+
+Vue stack:
 
 - vue — Copyright (c) 2018-present Yuxi (Evan) You and Vue contributors
 - @vue/server-renderer — Copyright (c) 2018-present Yuxi (Evan) You and Vue contributors
-- @inertiajs/vue3, @inertiajs/core — Copyright (c) Jonathan Reinink
-- vite — Copyright (c) 2019-present VoidZero Inc. and Vite contributors
+- @inertiajs/vue3 — Copyright (c) Jonathan Reinink
 - @vitejs/plugin-vue — Copyright (c) Vite contributors
 - vue-tsc — Copyright (c) Johnson Chu and contributors
-- @types/node — Copyright (c) Microsoft Corporation and DefinitelyTyped contributors
+
+React stack:
+
+- react, react-dom — Copyright (c) Meta Platforms, Inc. and affiliates
+- @inertiajs/react — Copyright (c) Jonathan Reinink
+- @vitejs/plugin-react — Copyright (c) Vite contributors
+- @types/react, @types/react-dom — Copyright (c) Microsoft Corporation and DefinitelyTyped contributors
 
 ### Apache License 2.0
 

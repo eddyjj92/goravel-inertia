@@ -82,7 +82,7 @@ with `--stack` (`vue` is the default):
 
 ```bash
 go run . artisan inertia:install                 # Vue 3 (default)
-go run . artisan inertia:install --stack=react   # React 18
+go run . artisan inertia:install --stack=react   # React 19
 ```
 
 This creates `config/inertia.go`, `resources/inertia/app.gohtml`, the JS app
@@ -282,7 +282,8 @@ Built on the shoulders of:
 - [Inertia.js](https://github.com/inertiajs/inertia) — the protocol & client (MIT).
 - [petaki/inertia-go](https://github.com/petaki/inertia-go) — the Go server engine (MIT).
 - [Goravel](https://github.com/goravel/framework) — the Go web framework (MIT).
-- [Vue](https://github.com/vuejs/core) & [Vite](https://github.com/vitejs/vite) (MIT).
+- [Vue](https://github.com/vuejs/core) & [React](https://github.com/facebook/react) — the scaffolded frontend stacks (MIT).
+- [Vite](https://github.com/vitejs/vite) — dev server & production builds (MIT).
 
 ## Attribution
 
