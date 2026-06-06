@@ -134,10 +134,23 @@ return facades.Inertia().Render(ctx, "Users/Index", map[string]any{"users": user
 
 ### Shared props
 
-`inertia:install` scaffolds `app/http/middleware/handle_inertia_requests.go` — the
-Go analogue of Laravel's `HandleInertiaRequests`. Its `share()` func returns props
-included on every Inertia response (it runs once per request). This is the
-recommended place for shared props such as the authenticated user:
+Shared props are sent on **every** Inertia response. This adapter offers a
+**hybrid** model — pick by lifecycle:
+
+| Mechanism | Where | Lifecycle | Use for |
+|-----------|-------|-----------|---------|
+| `share()` middleware | `app/http/middleware/handle_inertia_requests.go` | Per-request (ctx-aware) | Auth user, anything request-dependent. **Recommended default.** |
+| `Inertia().ShareFunc(key, fn)` | Provider `Boot` | Per-request (ctx-aware) | Same as above, but registered from a provider/package instead of the app middleware. |
+| `Inertia().Share(key, value)` | Provider `Boot` | Static, set once | Constants known at boot (app name, build info). No request access. |
+
+The underlying [`petaki/inertia-go`](https://github.com/petaki/inertia-go) engine
+only provides the static `Share(key, value)`. The per-request pieces —
+`HandleInertiaRequests` and `ShareFunc` — are added by this adapter so shared
+props can read the request (e.g. the authenticated user), the Go analogue of
+Laravel's `HandleInertiaRequests::share()`.
+
+**1. Per-request via the middleware (recommended).** `inertia:install` scaffolds
+`handle_inertia_requests.go`; its `share()` runs once per request and you own it:
 
 ```go
 // app/http/middleware/handle_inertia_requests.go
@@ -152,15 +165,15 @@ func share(ctx http.Context) map[string]any {
 ```
 
 Validation errors and session flash are shared by the package automatically — you
-only own `share()`.
+only own `share()`. Internally each entry is applied as a per-request prop.
 
-You can also register shared props imperatively via the facade (e.g. in a
-provider's `Boot`). `Share` takes a static value; `ShareFunc` is resolved per
-request from the context:
+**2. From a provider via the facade.** Useful when a provider or reusable package
+must contribute shared props without touching the app middleware. `Share` is
+static; `ShareFunc` is resolved per request from the context:
 
 ```go
-facades.Inertia().Share("appName", "My App")
-facades.Inertia().ShareFunc("user", func(ctx http.Context) any {
+facades.Inertia().Share("appName", "My App")          // static, set once
+facades.Inertia().ShareFunc("user", func(ctx http.Context) any { // per-request
     if !ctx.Request().HasSession() {
         return nil
     }
