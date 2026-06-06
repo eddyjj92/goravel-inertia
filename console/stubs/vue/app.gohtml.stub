@@ -9,6 +9,6 @@
     {{ vite "resources/js/app.ts" }}
 </head>
 <body>
-    {{ if .ssr }}{{ raw .ssr.Body }}{{ else }}<div id="app"></div><script data-page="app" type="application/json">{{ marshal .page }}</script>{{ end }}
+    {{ if .ssr }}{{ raw .ssr.Body }}{{ else }}<script data-page="app" type="application/json">{{ marshal .page }}</script><div id="app"></div>{{ end }}
 </body>
 </html>
