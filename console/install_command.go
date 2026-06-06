@@ -231,15 +231,17 @@ func removeWelcome() (bool, error) {
 	return true, nil
 }
 
-// printNextSteps lists the one piece the installer does not edit automatically:
-// the service provider list. The route + middleware wiring is done in web.go.
+// printNextSteps lists what's left after scaffolding. The service provider is
+// registered by `package:install`; the route + middleware wiring is done in web.go.
 func (r *InstallCommand) printNextSteps(ctx console.Context) {
 	ctx.NewLine()
 	ctx.Comment("Next steps:")
-	ctx.Line("  1. Register the service provider in bootstrap/providers.go:")
-	ctx.Line(`       inertiaproviders "github.com/eddyjj92/goravel-inertia/providers"`)
+	ctx.Line("  1. Make sure the service provider is registered (done automatically by")
+	ctx.Line("     `./artisan package:install github.com/eddyjj92/goravel-inertia`). If you")
+	ctx.Line("     added the package manually, register it in bootstrap/providers.go:")
+	ctx.Line(`       goravelinertia "github.com/eddyjj92/goravel-inertia"`)
 	ctx.Line("       ...")
-	ctx.Line("       &inertiaproviders.InertiaServiceProvider{},")
+	ctx.Line("       &goravelinertia.ServiceProvider{},")
 	ctx.NewLine()
 	ctx.Line("  2. Install JS deps and start the dev server:")
 	ctx.Line("       npm install")

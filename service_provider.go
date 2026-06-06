@@ -1,5 +1,4 @@
-// Package providers wires the Inertia manager into the Goravel service container.
-package providers
+package goravelinertia
 
 import (
 	stdhttp "net/http"
@@ -11,14 +10,19 @@ import (
 
 	petaki "github.com/petaki/inertia-go"
 
-	goravelinertia "github.com/eddyjj92/goravel-inertia"
 	inertiaconsole "github.com/eddyjj92/goravel-inertia/console"
 	"github.com/eddyjj92/goravel-inertia/contracts"
 	"github.com/eddyjj92/goravel-inertia/facades"
 )
 
-// InertiaServiceProvider registers and boots the Inertia singleton and facade.
-type InertiaServiceProvider struct {
+// ServiceProvider registers and boots the Inertia singleton and facade.
+//
+// Registered in a Goravel application via package:install (which wires it into
+// bootstrap/providers.go automatically) or manually:
+//
+//	import goravelinertia "github.com/eddyjj92/goravel-inertia"
+//	&goravelinertia.ServiceProvider{}
+type ServiceProvider struct {
 }
 
 // toStringSlice converts a config value (which may be []string or []any) into a
@@ -41,7 +45,7 @@ func toStringSlice(v any) []string {
 }
 
 // Register binds the Inertia manager as the "goravel.inertia" singleton.
-func (p *InertiaServiceProvider) Register(app foundation.Application) {
+func (p *ServiceProvider) Register(app foundation.Application) {
 	app.Singleton("goravel.inertia", func(app foundation.Application) (any, error) {
 		config := app.MakeConfig()
 
@@ -73,7 +77,7 @@ func (p *InertiaServiceProvider) Register(app foundation.Application) {
 			viteDevURL = config.GetString("inertia.vite.dev_url", viteDevURL)
 		}
 
-		vite := goravelinertia.NewVite(vitePublic, viteBuild, viteHot, viteDevURL)
+		vite := NewVite(vitePublic, viteBuild, viteHot, viteDevURL)
 
 		// Auto-derive the asset version from the build manifest when not pinned in
 		// config, so a new build invalidates the client cache automatically.
@@ -84,7 +88,7 @@ func (p *InertiaServiceProvider) Register(app foundation.Application) {
 		inertia := petaki.New(url, rootView, version)
 		inertia.ShareFunc("vite", vite.TemplateFunc())
 
-		adapter := goravelinertia.NewAdapter(inertia)
+		adapter := NewAdapter(inertia)
 
 		if ssr {
 			inertia.EnableSsr(ssrURL, &stdhttp.Client{Timeout: time.Duration(ssrTimeout) * time.Second})
@@ -97,14 +101,14 @@ func (p *InertiaServiceProvider) Register(app foundation.Application) {
 			adapter.SetCSR(csr)
 		}
 
-		manager := goravelinertia.NewInertiaManager(adapter, url, version, flashKeys...)
+		manager := NewInertiaManager(adapter, url, version, flashKeys...)
 
 		return manager, nil
 	})
 }
 
 // Boot resolves the manager, registers default shared props, and exposes the facade.
-func (p *InertiaServiceProvider) Boot(app foundation.Application) {
+func (p *ServiceProvider) Boot(app foundation.Application) {
 	instance, err := app.Make("goravel.inertia")
 	if err != nil {
 		panic("Failed to resolve goravel.inertia: " + err.Error())

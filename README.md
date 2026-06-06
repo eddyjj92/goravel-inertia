@@ -51,20 +51,31 @@ func (c *HomeController) Index(ctx http.Context) http.Response {
 
 ## Installation
 
+Install the package and register its service provider automatically:
+
+```bash
+go run . artisan package:install github.com/eddyjj92/goravel-inertia
+```
+
+This runs the package's `setup`, which adds `&goravelinertia.ServiceProvider{}`
+to `bootstrap/providers.go` (or `config/app.go` on a non-bootstrap setup) for you.
+
+<details>
+<summary>Manual registration</summary>
+
 ```bash
 go get github.com/eddyjj92/goravel-inertia
 ```
 
-Register the service provider in `bootstrap/providers.go`:
-
 ```go
-import inertiaproviders "github.com/eddyjj92/goravel-inertia/providers"
+import goravelinertia "github.com/eddyjj92/goravel-inertia"
 
 var Providers = []foundation.ServiceProvider{
     // ...
-    &inertiaproviders.InertiaServiceProvider{},
+    &goravelinertia.ServiceProvider{},
 }
 ```
+</details>
 
 Then scaffold the frontend, config, root template and a Vue 3 demo:
 
