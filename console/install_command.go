@@ -47,6 +47,8 @@ var fileMap = map[string]string{
 	"stubs/contact_controller.go.stub": "app/http/controllers/contact_controller.go",
 	"stubs/about_controller.go.stub":   "app/http/controllers/about_controller.go",
 
+	"stubs/handle_inertia_requests.go.stub": "app/http/middleware/handle_inertia_requests.go",
+
 	"stubs/vite.config.ts.stub": "vite.config.ts",
 	"stubs/tsconfig.json.stub":  "tsconfig.json",
 	"stubs/package.json.stub":   "package.json",

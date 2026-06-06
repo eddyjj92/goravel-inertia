@@ -12,7 +12,7 @@ declare module '@inertiajs/core' {
   interface PageProps {
     appName: string
     timestamp: string
-    auth: Record<string, unknown> | null
+    auth: { user: Record<string, unknown> | null }
     flash: Record<string, string>
   }
 }
