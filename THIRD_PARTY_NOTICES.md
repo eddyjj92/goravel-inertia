@@ -6,8 +6,7 @@ below. Each component is distributed under its own license and copyright. This
 file is provided for convenience; the authoritative license text ships with each
 dependency.
 
-No dependency is under a strong-copyleft license (GPL/LGPL/AGPL). The only
-weak-copyleft component is the MySQL driver (MPL-2.0), used unmodified.
+No dependency is under a copyleft license (GPL/LGPL/AGPL/MPL).
 
 ---
 
@@ -54,11 +53,6 @@ weak-copyleft component is the MySQL driver (MPL-2.0), used unmodified.
 ### ISC License
 
 - github.com/davecgh/go-spew — Copyright (c) 2012-2016 Dave Collins
-
-### Mozilla Public License 2.0
-
-- github.com/go-sql-driver/mysql — Copyright The Go-MySQL-Driver Authors
-  (MPL-2.0; used as an unmodified dependency)
 
 ---
 

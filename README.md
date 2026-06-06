@@ -289,5 +289,5 @@ used here only for identification, not endorsement.
 ## License
 
 Code is released under the [MIT License](LICENSE). Third-party dependencies keep
-their own licenses — see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)
-(MIT / BSD / Apache-2.0; the bundled MySQL driver is MPL-2.0, used unmodified).
+their own licenses (MIT / BSD / Apache-2.0) — see
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
