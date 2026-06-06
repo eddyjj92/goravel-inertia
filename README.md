@@ -85,9 +85,11 @@ go run . artisan inertia:install
 
 This creates `config/inertia.go`, `resources/inertia/app.gohtml`, the Vue app
 under `resources/js/`, demo pages (Home / Feed / Contact / About) with their
-controllers, `vite.config.ts`, `tsconfig.json` and `package.json`. It also wires
-`routes/web.go` (session + Inertia middleware, demo routes) and removes the
-default Goravel welcome view. Pass `--force` to overwrite existing files.
+controllers, the `app/http/middleware/handle_inertia_requests.go` middleware (your
+shared-props entry point), `vite.config.ts`, `tsconfig.json` and `package.json`.
+It also wires `routes/web.go` (session + `HandleInertiaRequests` middleware, demo
+routes) and removes the default Goravel welcome view. Pass `--force` to overwrite
+existing files.
 
 Finally:
 
@@ -111,6 +113,9 @@ Open <http://localhost:3000>.
 | `ssr_url` | `INERTIA_SSR_URL` | `http://127.0.0.1:13714/render` | SSR Node endpoint. |
 | `ssr_timeout` | `INERTIA_SSR_TIMEOUT` | `5` | Seconds before SSR is abandoned for CSR. |
 | `flash_keys` | — | `success,error,warning,info,message` | Session keys mirrored into `props.flash`. |
+| `vite.public_path` | — | `public` | Public web root served to clients. |
+| `vite.build_dir` | — | `build` | Production build dir under `public_path`. |
+| `vite.hot_file` | — | `public/hot` | Hot file written by `npm run dev`. |
 | `vite.dev_url` | `VITE_DEV_URL` | `` | Dev-server URL (usually set via `public/hot`). |
 
 ## Usage
@@ -129,7 +134,28 @@ return facades.Inertia().Render(ctx, "Users/Index", map[string]any{"users": user
 
 ### Shared props
 
-Registered once (e.g. in `routes/web.go` or the provider), included on every response:
+`inertia:install` scaffolds `app/http/middleware/handle_inertia_requests.go` — the
+Go analogue of Laravel's `HandleInertiaRequests`. Its `share()` func returns props
+included on every Inertia response (it runs once per request). This is the
+recommended place for shared props such as the authenticated user:
+
+```go
+// app/http/middleware/handle_inertia_requests.go
+func share(ctx http.Context) map[string]any {
+    return map[string]any{
+        "appName": facades.Config().GetString("app.name"),
+        "auth": map[string]any{
+            "user": authUser(ctx),
+        },
+    }
+}
+```
+
+Validation errors and session flash are shared by the package automatically — you
+only own `share()`.
+
+You can also register shared props imperatively via the facade (e.g. in the
+provider), included on every response:
 
 ```go
 facades.Inertia().Share("appName", "My App")
@@ -155,6 +181,7 @@ facades.Inertia().ShareFunc("auth", func(ctx http.Context) any {
 | `Scroll(ctx, key, prop)` | Infinite-scroll / pagination metadata. |
 | `Once(ctx, key, fn)` | Sent once, then cached client-side. |
 | `Prop(ctx, key, value)` | Eager per-request prop. |
+| `PreserveFragment(ctx)` | Keep the URL fragment (`#hash`) across the visit. |
 
 ```go
 func (c *HomeController) Index(ctx http.Context) http.Response {
@@ -185,6 +212,9 @@ func (c *ContactController) Store(ctx http.Context) http.Response {
 ```
 
 On the client: `usePage().props.flash` and `usePage().props.errors` (or `useForm`).
+
+You can also push props imperatively: `Flash(ctx, data)` merges a map into
+`props.flash`, and `Error(ctx, key, value)` adds a single validation error.
 
 ### Redirects
 
