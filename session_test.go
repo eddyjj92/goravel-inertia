@@ -73,15 +73,15 @@ func TestShareSessionInjectsFlashAndErrors(t *testing.T) {
 	m.ShareSession(ctx)
 	page := inertiaJSON(t, m, ctx, "Dashboard", nil)
 
-	flash, _ := page["flash"].(map[string]any)
+	props, _ := page["props"].(map[string]any)
+	flash, _ := props["flash"].(map[string]any)
 	if flash["success"] != "Saved" {
-		t.Errorf("flash[success] = %#v, want Saved", flash["success"])
+		t.Errorf("props.flash[success] = %#v, want Saved", flash["success"])
 	}
 	if _, present := flash["ignored"]; present {
 		t.Errorf("non-flash-key 'ignored' leaked into flash: %#v", flash)
 	}
 
-	props, _ := page["props"].(map[string]any)
 	errs, _ := props["errors"].(map[string]any)
 	if errs["email"] != "is required" {
 		t.Errorf("errors[email] = %#v, want 'is required'", errs["email"])
@@ -95,8 +95,9 @@ func TestShareSessionNoSessionIsNoop(t *testing.T) {
 	m.ShareSession(ctx) // must not panic
 	page := inertiaJSON(t, m, ctx, "Dashboard", nil)
 
-	if _, present := page["flash"]; present {
-		t.Errorf("flash should be absent without a session, got %#v", page["flash"])
+	props, _ := page["props"].(map[string]any)
+	if _, present := props["flash"]; present {
+		t.Errorf("props.flash should be absent without a session, got %#v", props["flash"])
 	}
 }
 

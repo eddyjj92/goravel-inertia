@@ -95,9 +95,11 @@ func (m *InertiaManager) Error(ctx contractshttp.Context, key string, value any)
 	m.storePropsContext(ctx, m.adapter.Inertia().WithErrorProp(m.propsContext(ctx), key, value))
 }
 
-// Flash attaches flash data to the response props.
+// Flash attaches flash data under props.flash, matching the Inertia + Laravel
+// convention where flash is a shared prop read via usePage().props.flash. This
+// keeps flash consistent with props.errors instead of petaki's top-level page.flash.
 func (m *InertiaManager) Flash(ctx contractshttp.Context, data map[string]any) {
-	m.storePropsContext(ctx, m.adapter.Inertia().WithFlash(m.propsContext(ctx), data))
+	m.storePropsContext(ctx, m.adapter.Inertia().WithProp(m.propsContext(ctx), "flash", data))
 }
 
 // ClearHistory instructs the client to clear its history state.

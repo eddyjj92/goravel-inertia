@@ -202,9 +202,10 @@ func TestFlashIntoPage(t *testing.T) {
 	m.Flash(ctx, map[string]any{"success": "saved"})
 
 	page := inertiaJSON(t, m, ctx, "Dashboard", nil)
-	flash, _ := page["flash"].(map[string]any)
+	props, _ := page["props"].(map[string]any)
+	flash, _ := props["flash"].(map[string]any)
 	if flash["success"] != "saved" {
-		t.Errorf("flash[success] = %#v, want saved", flash["success"])
+		t.Errorf("props.flash[success] = %#v, want saved", flash["success"])
 	}
 }
 
